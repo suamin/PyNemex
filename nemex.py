@@ -10,7 +10,7 @@ from similarity import similarities
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
                     datefmt='%m/%d/%Y %H:%M:%S',
-                    level=logging.DEBUG)
+                    level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -49,7 +49,6 @@ class Entity:
     def char_repr(self):
         if self.is_char:
             return "".join([self.tokens[0]] + [self.tokens[i][-1] for i in range(1, len(self.tokens))])
-
 
 
 class EntitiesDict:
@@ -118,7 +117,6 @@ class InvertedIndex:
             if token in self.index:
                 inverted_lists[token_index] = self.index[token]
         return inverted_lists
-
 
 
 class Faerie:
@@ -363,6 +361,11 @@ class Faerie:
             ```
             V[ith token][l tokens to right from i] = count ==> V[i][l]
             ```
+            **Important**: This is naive as we don't need to initialize for
+            all starting tokens and global lower-to-upper bounds but only
+            for starting positions where we will do actual counting and for
+            each entity's lower-to-upper bounds. Such implementation will reduce
+            a lot of space complexity.
         
         """
         self.V = collections.defaultdict(dict)
@@ -372,87 +375,79 @@ class Faerie:
             for l in range(self.min_lower_e, self.max_upper_e + 1):
                 self.V[token_i][l] = 0
     
-    def increment_count(self, i, l):
-        """Increment the relevant entries from given position index and length.
-        
-        Parameters
-        ----------
-            i : int
-                The right position in document index, marking as end of substring.
-            
-            l : int
-                Length to consider before position i (effectively starting at 
-                i-l+1 to i for substring D[i-l+1, l]). 
-        
-        """
-        # relevant entries for this increment starts from ``start_index`` and 
-        # goes up to ``i``
-        start_index = i-l+1
-        
-        # when looking back from current index is larger than number of elements
-        # before that position
-        if start_index < 0:
-            # note 0 based indexing
-            for j in range(i+1):
-                self.V[j][l] += 1
-        else:
-            for j in range(start_index, i+1):
-                self.V[j][l] += 1
-    
-    def count(self, spans, lower_e, upper_e):
+    def count(self, position_index, lower_e, upper_e):
         """
         ADD DOCUMENTATION HERE!
         """
-        for length in range(lower_e, upper_e+1):
-            for start, _ in spans:
-                self.increment_count(start, length)
+        for l in range(lower_e, upper_e+1):
+            # relevant entries for this increment starts from ``start_index`` and goes up to ``position_index``
+            # less than 0 case: when looking back from current index is larger than number of elements before 
+            # that position, so we clamp at 0
+            start_index = max(0, position_index-l+1)
+            end_index = position_index
+            for i in range(start_index, end_index+1):
+                # i = the right position in document index, marking as end of substring
+                # l = length to consider before position i (effectively starting at i-l+1 to i for substring D[i-l+1, l])
+                self.V[i][l] += 1
     
-    def enumerate_cadidate_windows(self, i, j, Pe, e):
+    def enumerate_windows(self, i, j, Pe, e):
         """
         ADD DOCUMENTATION HERE!
         """
-        pi = Pe[i-1]
-        # edge case when pi is start of list
-        if i-1 == 0:
-            pi_prev = -math.inf
-        else:
-            pi_prev = Pe[i-2]
-        
-        pj = Pe[j-1]
-        # edge case when pj is last of list
-        if j == len(Pe):
-            pj_next = math.inf
-        else:
-            pj_next = Pe[j]
-        
-        Te = self.E[e].upper_e
-        # pg. 535, left column 2 para
-        lo = max(pj - Te + 1, pi_prev + 1)
-        up = min(pi + Te - 1, pj_next - 1)
-        
-        if self.method in ('edit_dist', 'edit_sim'):
-            upper_e = self.E[e].upper_e
-        else:
-            # using tighther upper bound for Jaccard, Cosine and Dice
-            e_len = self.I.lens[e]
-            Pe_ij_len = j - i + 1
-            upper_e = self.similarity.tighter_upper_window_size(e_len, Pe_ij_len, self.t)
-        
         spans = list()
+        lower_e = self.E[e].lower_e
+        upper_e = self.E[e].upper_e
+        Tl = self.E[e].Tl
+        Pe_ij = Pe[i-1:j]
+        Pe_ij_len = len(Pe_ij)
         
-        # lo <= p_start <= pi
-        for p_start in range(lo, pi+1):
-            # pj <= p_end <= up
-            for p_end in range(pj, up+1):
-                # |s| = |D[p_start · · · p_end ]| 
-                s_len = p_end - p_start + 1
-                if self.E[e].lower_e <= s_len <= upper_e:
-                    spans.append((p_start, s_len))
-        
-        # count select windows
-        self.count(spans, self.E[e].lower_e, self.E[e].upper_e)
-        # compute the overlap similarity to prune candidates
-        spans = self.similarity_overlap_prune(spans, e)
+        # first, make sure that we have a valid window (cf. Definition 3, condition 1)
+        if Tl <= Pe_ij_len <= upper_e:
+            pi = Pe[i-1]
+            pj = Pe[j-1]
+            
+            if self.method in ('edit_dist', 'edit_sim'):
+                tight_upper_e = upper_e
+            else:
+                # using tighther upper bound for Jaccard, Cosine and Dice
+                e_len = self.I.lens[e]
+                tight_upper_e = self.similarity.tighter_upper_window_size(e_len, Pe_ij_len, self.t)
+            
+            # second, make sure we have a candidate window (cf. Definition 3, condition 2)
+            if lower_e <= pj - pi + 1 <= tight_upper_e:
+                
+                # do the actual counting here
+                for pk in Pe_ij:
+                    self.count(pk, self.E[e].lower_e, self.E[e].upper_e)
+                
+                logger.debug("candid_window : Pe[{}. . .{}] ; Pe_ij = {} ; pi={}, pj={}".format(i, j, Pe_ij, pi, pj))
+                
+                # edge case when pi is start of list
+                if i-1 == 0:
+                    pi_prev = -math.inf
+                else:
+                    pi_prev = Pe[i-2]
+                
+                # edge case when pj is last of list
+                if j == len(Pe):
+                    pj_next = math.inf
+                else:
+                    pj_next = Pe[j]
+                
+                # pg. 535, left column 2 para
+                # ``lo`` goes to minus sometimes!! that's why clamping to 0
+                lo = max(0, max(pj - upper_e + 1, pi_prev + 1))
+                up = min(pi + upper_e - 1, pj_next - 1)
+                logger.debug("lo={} to pi={} ; pj={} to up={}".format(lo, pi, pj, up))
+                
+                for p_start in range(lo, pi+1):                     # lo <= p_start <= pi
+                    for p_end in range(pj, up+1):                   # pj <= p_end <= up
+                        s_len = p_end - p_start + 1                 # |s| = |D[p_start · · · p_end ]| 
+                        if self.E[e].lower_e <= s_len <= upper_e:   # ⊥e ≤ |s| ≤ Te
+                            spans.append((p_start, s_len))
+                
+                # compute the overlap similarity to prune candidates
+                spans = self.similarity_overlap_prune(spans, e)
         
         return spans
     
@@ -471,7 +466,6 @@ class Faerie:
                 T = self.similarity.find_tau_min_overlap(e_len, length, self.t)
             
             count_overlap = self.V[start][length]
-            print(count_overlap, T)
             if count_overlap >= T:
                 final_spans.append((start, length))
         
@@ -504,7 +498,7 @@ class Faerie:
         if mid > len(Pe):
             mid = len(Pe)
         
-        candidate_windows = self.enumerate_cadidate_windows(i, mid, Pe, e)
+        candidate_windows = self.enumerate_windows(i, mid, Pe, e)
          
         return candidate_windows
     
@@ -605,52 +599,79 @@ class Faerie:
         
         # final (entity -> candidates) map
         entity2candidates = collections.defaultdict(set)
+        # we use ``stop`` as flag to break the loop because while len(self.heap) > 0 does not process last entity
+        stop = False
+        # counter for number of iterations (should be equal to sum(lenght of inv. lists))
+        i = 0
+        # the sequence of elements popped from heap (should be ascending and consecutive e.g. [0,0,0,1,1,2,2,2,3,3,...])
+        pop_sequence = list()
         
-        while len(self.heap) > 0:
+        while True:
             
-            # pop the top element from heap
-            ei = heapq.heappop(self.heap)
-            
-            # get position list for ei and obtain its current position
-            #
-            #    (___position_list___)[_index_of_position_list_]
-            #
-            pi = self.positions[ei][0][self.positions[ei][1]]
-            
-            # increment top pointer of sublist at position pi
-            self.top_pointers[pi] += 1
-            # move index to next position in sublist as well
-            self.positions[ei][1] += 1
+            # till heap is empty
+            try:
+                # pop the top element from heap
+                ei = heapq.heappop(self.heap)
+                pop_sequence.append(ei)
+            except:
+                stop = True
+                ei = None
+                pi = None
+            else:
+                # get position list for ei and obtain its current position
+                #    (___position_list___)[_index_of_position_list_]
+                pi = self.positions[ei][0][self.positions[ei][1]]
+                self.top_pointers[pi] += 1 # increment top pointer of sublist at position pi
+                self.positions[ei][1] += 1 # move index to next position in sublist as well
             
             # while we have same entity, we keep popping it to build position list
             if ei == e:
                 Pe.append(pi)
-            # else we see a new entity, 
+            # else we see a new entity
             else:
-                print(self.E[e])
-                if len(Pe) >= self.E[e].Tl:
+                # this should be equal to pre-computed list
+                assert Pe == self.positions[e][0], "Invalid position list, expected `{}` but collected `{}`".format(self.positions[e][0], Pe)
+                
+                current_entity = self.E[e]
+                logger.info("Analyzing e={} (id={}) Pe={} ⊥e={} Te={} Tl={}".format(current_entity.entity, e, Pe, current_entity.lower_e, current_entity.upper_e, current_entity.Tl))
+                
+                Tl = current_entity.Tl
+                # lazy-count pruning: |Pe| <= Tl < T (Lemma 3)
+                if len(Pe) >= Tl:
+                    logger.debug("Passed lazy-count criteria!")
                     # find candidate windows using Algorithm 1
                     entity2candidates[e].update(self.find_candidate_windows(e, Pe))
+                else:
+                    logger.debug("Pruned by lazy-count criteria |Pe|={} <= Tl={}".format(current_entity.entity, len(Pe), Tl))
                 
                 e = ei
                 Pe = [pi]
                 self.reset_count_occurence(len(self.D))
             
             # add new element to heap if there
-            pi_top_pointer = self.top_pointers[pi]
-            if pi_top_pointer < len(inverted_lists[pi]):
-                e_to_add = inverted_lists[pi][pi_top_pointer]
-                heapq.heappush(self.heap, e_to_add)
+            if pi is not None:
+                pi_top_pointer = self.top_pointers[pi]
+                if pi_top_pointer < len(inverted_lists[pi]):
+                    e_to_add = inverted_lists[pi][pi_top_pointer]
+                    heapq.heappush(self.heap, e_to_add)
             
             # otherwise we have nothing to add and heap is already adjusted with heappop
+            i += 1
+            if stop:
+                break
+        
+        logger.debug("Total iterations: {}".format(i))
+        logger.debug("Heap-popped elements sequence: {}".format(pop_sequence))
         
         return entity2candidates
-
+    
     def print_candidate_substrings(self, entity2candidates):
         """
         ADD DOCUMENTATION HERE!
         """
         for e, candidates in entity2candidates.items():
+            if len(candidates) == 0:
+                continue
             print("Entity:", self.E[e].entity)
             print("----------------------------")
             for start, length in candidates:
@@ -676,7 +697,7 @@ if __name__=="__main__":
 
     entities_configs = dict(char=True, q=2, whitespace_char='_', unique=False)
     entities_dict = EntitiesDict.from_list(E, **entities_configs)
-     
+    
     faerie_configs = dict(
         similarity='edit_dist', threshold=2, q=entities_configs['q'], 
         whitespace_char=entities_configs['whitespace_char'], 
