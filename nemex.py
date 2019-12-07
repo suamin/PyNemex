@@ -10,7 +10,7 @@ from similarity import similarities
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
                     datefmt='%m/%d/%Y %H:%M:%S',
-                    level=logging.INFO)
+                    level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
@@ -490,14 +490,13 @@ class Faerie:
                     upper = mid - 1
                 else:
                     lower = mid + 1
+            # this is heuristic based, if mid exceeds the length, we decrement it;
+            # without this condition we miss many candidate windows e.g. 'surauijt ch'
+            # in Table 1 document for entity 'surajit ch' 
             else:
-                lower = mid + 1
+                upper = mid - 1
         
         mid = upper
-        # clip mid to max length if it is out of bound (is there systematic way to fix it?)
-        if mid > len(Pe):
-            mid = len(Pe)
-        
         candidate_windows = self.enumerate_windows(i, mid, Pe, e)
          
         return candidate_windows
@@ -520,10 +519,9 @@ class Faerie:
         
         i = lower
         j = i + Tl - 1
-        # clip if larger than size of position list
+        # if j jumps over, clip it to the length of position list
         if j > len(Pe):
             j = len(Pe)
-        
         pi, pj = Pe[i-1], Pe[j-1]
         
         if (pj - pi + 1) > Te:
@@ -677,11 +675,14 @@ class Faerie:
             for start, length in candidates:
                 substring = self.D[start:start+length]
                 if self.is_char:
-                    substring = "".join([substring[0]] + [substring[i][-1] for i in range(1, len(substring))]) 
+                    substring = self.chars_to_str(substring)
                 else:
                     substring = " ".join(substring)
                 print(substring)
             print("----------------------------")
+    
+    def chars_to_str(self, substring):
+        return "".join([substring[0]] + [substring[i][-1] for i in range(1, len(substring))])
 
 
 if __name__=="__main__":
