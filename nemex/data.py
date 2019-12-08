@@ -6,7 +6,7 @@ import heapq
 import logging
 
 
-logger = logging.getLogger("nemex")
+logger = logging.getLogger(__name__)
 
 
 class Entity:
@@ -138,13 +138,78 @@ class InvertedIndex:
 
 
 class FaerieDataStructure:
+    """Main class to hold all the data structures needed for Faerie.
+        Initializes min-heap from top elements of inverted lists.
     
+    Notes
+    -----
+    A single min-heap is created from the top elements of each inverted 
+    list. As an example, take fig. 5 from paper:
+    ```
+    inverted_lists = [[4], [4], [4], [1, 4], [1, 4], [1, 4], [1, 4], [1]]
+                       ^    ^    ^    ^       ^       ^       ^       ^
+    sub_indexes:       0    0    0    0  1    0   1   0  1    0  1    0
+    token_index:       0    1    2      3       8      13      18     19    
+    ```
+    then, heap will be made of all entity ids marked with ^ for
+    initialization.
+    
+    Next, we also need to maintain pointers to first elements' index
+    in each (sub)-list. At initialization it will be all 0's (because
+    ^ points to first positions in each list).
+    
+    At pop of first "1", the picture will look like
+    ```
+    inverted_lists = [[4], [4], [4], [x, 4], [1, 4], [1, 4], [1, 4], [1]]
+                       ^    ^    ^       ^    ^       ^       ^       ^
+    sub_indexes:       0    0    0    0  1    0   1   0  1    0  1    0
+    token_index:       0    1    2      3       8      13      18     19 
+    ```
+    We can see that the pointer ^ of fourth sublist moved to position
+    1 of sublist. Note, in implementation, the poped entity is never
+    removed from actual inverted list so, `x` here is only for visualization
+    purposes.
+    
+    However, we **CAN** create a mapping from entity index to position lists.
+    ```
+    ent2positions = { 1 : [3, 8, 13, 18, 19], 4 : [0, 1, 2, 3, 8, 13, 18] }
+    ```
+    We create dictionaries and retrieve inverted lists in such a manner that
+    all position lists are pre-computed and positions sorted. Since min-heap
+    is generated from top-elements, we will see smallest indexed entity in heap
+    until all its occurences exhaust e.g. after full cycle of heap-pop+push,
+    we will have popped elements as [0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4].
+    This effectively allows to keep one active count occurence array only.
+    The local pointer per entity list is just an integer ``self.current_e_indptr``.
+    Lastly, we need to keep top pointers per postion. This we do it with a 
+    simple dictionary in ``self.position2topidx``.
+    
+    Important note for possible improvement: because we already know the position 
+    sizes (|Pe|) we **CAN** apply lazy-count pruning during initialization. This will
+    eliminate all the unnecessary entities from being added in heap in first place.
+    Thus the heap adjustment costs from these entities will be eliminated. However, 
+    this will come at cost of space complexity as we are pre-computing all the 
+    position lists.
+    
+    """
     def __init__(self, ents_dict):
         self.ents_dict = ents_dict
         self.inv_index = InvertedIndex.from_ents_dict(ents_dict)
         self._heap = list()
     
     def init_from_inv_lists(self, inv_lists):
+        """Faerie data-structures initialization.
+        
+        Creates min-heap from top elements of inverted lists. Record
+        positions, maintains top pointers and count array per entity.
+        
+        Parameters
+        ----------
+        inverted_lists : dict of [int, list]
+            A mapping from token position in document, where the sublist is non-empty, 
+            to the inverted list. Where each list is sorted in ascending order.
+        
+        """
         self.heap = inv_lists
         self.init_position_data(inv_lists)
         self.inv_lists = inv_lists
@@ -162,26 +227,88 @@ class FaerieDataStructure:
         heapq.heapify(self._heap)
     
     def init_position_data(self, inv_lists):
+        # mapping from entity index to sorted list of token positions
         self.ent2positions = collections.defaultdict(list)
+        
+        # mapping from non-empty sublist token positions to the index of current 
+        # top element (the element currently in heap) in inverted list
         self.position2topidx = dict()
         
+        # since we used ``OrderedDict`` in :meth:`~nemex.data.InvertedIndex.__getitem__`, 
+        # looping over it will return keys in asecending order
         for position in inv_lists:
+            # since we used enumeration in :meth:`~nemex.data.InvertedIndex.__getitem__`, 
+            # looping over each sublist will return token positions in asecending order
             for eidx in inv_lists[position]:
                 self.ent2positions[eidx].append(position)
             
+            # set each sub-lists' pointer where the top element index is (initially at 0)
             self.position2topidx[position] = 0
     
     def reset_count(self):
+        """Initialize or clear a counter for current entity being processed.
+        
+        Notes
+        -----
+        The counter ``V`` is a nested dictionary, where the primary key
+        is the token position and secondary key is the number of tokens
+        from their to the right:
+        ```
+        V[ith token][l tokens to right from i] = count ==> V[i][l]
+        ```
+        
+        """
         self.V = collections.defaultdict(lambda: collections.defaultdict(int))
     
     def count(self, position, min_len, max_len):
+        """Increment count of entity's occurence in relevant positions.
+        
+        Parameters
+        ----------
+        position : int
+            End position (right position).
+        
+        min_len : int
+            Minimum length to look behind from end position to update
+            (position - l + 1, left position).
+        
+        max_len : int
+            Maximum length to look behind from end position to update
+            (position - l + 1, left position).
+        
+        Notes
+        -----
+        See pg. 532 second column last para for a good running example.
+        
+        """
         for l in range(min_len, max_len+1):
+            # relevant entries for this increment starts from ``start_idx`` 
+            # and goes up to ``position``; less than 0 case: when looking 
+            # back from current index is larger than number of elements before 
+            # that position, so we clamp at 0
             start_idx = max(0, position-l+1)
             end_idx = position
             for j in range(start_idx, end_idx+1):
+                # j = the right position in document index, marking as end of substring
+                # l = length to consider before position j 
+                # (effectively starting at j-l+1 to j for substring D[j-l+1, l])
                 self.V[j][l] += 1
     
     def step(self, e):
+        """A Faerie step to update its data structures.
+        
+        Steps involved:
+            1. Pop element from heap.
+            2. If heap is empty raise stop flag
+            3. Else, if popped entity is different than last entity,
+               reset the running sub-list pointer.
+            4. Get the position from which this element came from.
+            5. Update pointers.
+            6. If current position inverted list still has element,
+               push it to the heap.
+            7. Return popped entity, its position and stop flag.
+        
+        """
         stop = False
         try:
             # pop the top element from heap
