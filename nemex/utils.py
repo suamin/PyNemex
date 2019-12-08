@@ -3,7 +3,7 @@
 import collections
 import logging
 
-logger = logging.getLogger("nemex")
+logger = logging.getLogger(__name__)
 
 
 class Tokenizer:

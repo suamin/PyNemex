@@ -4,7 +4,7 @@ import math
 import logging
 
 
-logger = logging.getLogger("nemex")
+logger = logging.getLogger(__name__)
 
 
 class NoPruning:
