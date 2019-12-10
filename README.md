@@ -81,41 +81,57 @@ Running the example gives results as:
 ```bash
 Entity: chaudhuri
 ----------------------------
-surauijt_cha
-ijt_chadhuri
-t_chadhuris
-chadhurisig
-chadhurisigm
-chadhuris
-_chadhuri
-jt_chadhuri
-jt_chadhuris
-_chadhuris
-t_chadhurisi
-rauijt_chadh
-chadhuri
-_chadhurisi
-t_chadhuri
-_chadhurisig
-chadhurisi
+[True] chadhuri -- t_true=1 <= 2=t_bounded
+[False] chadhurisi -- t_true=3 <= 2=t_bounded
+[True] _chadhuri -- t_true=2 <= 2=t_bounded
+[False] t_chadhuris -- t_true=4 <= 2=t_bounded
+[False] t_chadhurisi -- t_true=5 <= 2=t_bounded
+[False] rauijt_chadh -- t_true=10 <= 2=t_bounded
+[False] _chadhurisi -- t_true=4 <= 2=t_bounded
+[False] jt_chadhuri -- t_true=4 <= 2=t_bounded
+[False] jt_chadhuris -- t_true=5 <= 2=t_bounded
+[False] _chadhuris -- t_true=3 <= 2=t_bounded
+[False] _chadhurisig -- t_true=5 <= 2=t_bounded
+[False] chadhurisig -- t_true=4 <= 2=t_bounded
+[False] chadhurisigm -- t_true=5 <= 2=t_bounded
+[False] ijt_chadhuri -- t_true=5 <= 2=t_bounded
+[True] chadhuris -- t_true=2 <= 2=t_bounded
+[False] t_chadhuri -- t_true=3 <= 2=t_bounded
+[False] surauijt_cha -- t_true=10 <= 2=t_bounded
 
 Entity: venkatesh
 ----------------------------
-venkaee_shga
-venkaee_shg
-._venkaee_sh
-_venkaee_shg
-venkaee_sh
-_venkaee_sh
+[True] venkaee_sh -- t_true=2 <= 2=t_bounded
+[False] venkaee_shg -- t_true=3 <= 2=t_bounded
+[False] _venkaee_shg -- t_true=4 <= 2=t_bounded
+[False] _venkaee_sh -- t_true=3 <= 2=t_bounded
+[False] venkaee_shga -- t_true=4 <= 2=t_bounded
+[False] ._venkaee_sh -- t_true=4 <= 2=t_bounded
 
 Entity: surajit ch
 ----------------------------
-surauijt_cha
-_surauijt_cha
-,_surauijt_ch
-surauijt_chad
-surauijt_ch
-_surauijt_ch
+[False] ,_surauijt_ch -- t_true=4 <= 2=t_bounded
+[False] _surauijt_ch -- t_true=3 <= 2=t_bounded
+[True] surauijt_ch -- t_true=2 <= 2=t_bounded
+[False] surauijt_chad -- t_true=4 <= 2=t_bounded
+[False] _surauijt_cha -- t_true=4 <= 2=t_bounded
+[False] surauijt_cha -- t_true=3 <= 2=t_bounded
+```
+With verified examples only:
+```bash
+Entity: chaudhuri
+----------------------------
+[True] _chadhuri -- t_true=2 <= 2=t_bounded
+[True] chadhuris -- t_true=2 <= 2=t_bounded
+[True] chadhuri -- t_true=1 <= 2=t_bounded
+
+Entity: venkatesh
+----------------------------
+[True] venkaee_sh -- t_true=2 <= 2=t_bounded
+
+Entity: surajit ch
+----------------------------
+[True] surauijt_ch -- t_true=2 <= 2=t_bounded
 ```
 
 ## History
