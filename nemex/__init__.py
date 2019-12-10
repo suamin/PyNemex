@@ -11,6 +11,6 @@ from .pruning import (
 )
 
 from .utils import Tokenizer
-from .similarities import Similarity
+from .similarities import Similarity, Verify
 
 from .faerie import Faerie

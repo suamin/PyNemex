@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import math
+from Levenshtein import editops
 
 
 class JaccardSimilarity:
@@ -200,3 +201,82 @@ class Similarity:
         if self.similarity not in ("edit_dist", "edit_sim"):
             raise AttributeError("Tighter neighbor bound is not supported with {}".format(self.similarity))
         return self._sims[self.similarity].tighter_neighbor_bound(*args)
+
+
+# Actual similarity / distance scores
+
+
+def jaccard(r_tokens, s_tokens):
+    #
+    # jaccard(r, s) = |r ∩ s| / |r ∪ s|
+    #
+    r_set = set(r_tokens)
+    s_set = set(s_tokens)
+    return len(r_set.intersection(s_set)) / len(r_set.union(s_set))
+
+
+def cosine(r_tokens, s_tokens):
+    #
+    # cos(r, s) = |r ∩ s| / sqrt(|r| * |s|)
+    #
+    return len(set(r_tokens).intersection(s_tokens)) / math.sqrt(len(r_tokens) * len(s_tokens))
+
+
+def dice(r_tokens, s_tokens):
+    #
+    # dice(r, s) = 2 * |r ∩ s| / |r| + |s|
+    #
+    return (2 * len(set(r_tokens).intersection(s_tokens))) / (len(r_tokens) + len(s_tokens))
+
+
+def edit_dist(r_string, s_string):
+    #
+    # ED(r, s) = number of edit operations
+    #
+    return len(editops(r_string, s_string))
+
+
+def edit_sim(r_string, s_string):
+    #
+    # EDS(r, s) = 1 - (ED(r, s) / max(len(r), len(s)))
+    #
+    return 1 - (edit_dist(r_string, s_string) / max(len(r_string), len(s_string)))
+
+
+class Verify:
+    
+    @classmethod
+    def check(cls, r, s, method, t):
+        
+        if method in ("jaccard", "cosine", "dice"):
+        
+            if not (isinstance(r, list) and isinstance(s, list)):
+                raise ValueError("Both candidate and entity are expected to be list of tokens")
+            
+            if method == "jaccard":
+                true_t = jaccard(r, s)
+            elif method == "cosine":
+                true_t = cosine(r, s)
+            elif method == "dice":
+                true_t = dice(r, s)
+            
+            valid = true_t >= t
+            
+            return valid, true_t
+        
+        elif method in ("edit_dist", "edit_sim"):
+            
+            if not (isinstance(r, str) and isinstance(s, str)):
+                raise ValueError("Both candidate and entity are expected to be strings")
+            
+            if method == "edit_dist":
+                true_t = edit_dist(r, s)
+                valid = true_t <= t
+            elif method == "edit_sim":
+                true_t = edit_sim(r, s)
+                valid = true_t >= t
+            
+            return valid, true_t
+        
+        else:
+            raise ValueError("Invalid method %s" % method)
