@@ -35,6 +35,8 @@ def test_nemex():
     # run on document to find approximate entities from dictionary
     doc_tokens = tokenizer(D)
     entity2candidates = collections.defaultdict(set)
+    verified_only = True
+    
     for e, (i, j) in faerie(doc_tokens):
         substring = doc_tokens[i:j+1]
         if char:
@@ -48,8 +50,23 @@ def test_nemex():
             continue
         print("Entity:", ents_dict[e].entity)
         print("----------------------------")
+        if char:
+            entity = nemex.utils.qgrams_to_char(ents_dict[e].tokens)
+        else:
+            entity = ents_dict[e].tokens
         for candidate in candidates:
-            print(candidate)
+            if not char:
+                substring = tokenizer(candidate)
+            else:
+                substring = candidate
+            valid, score = nemex.Verify.check(substring, entity, similarity, t)
+            if verified_only:
+                if not valid:
+                    continue
+            print("[{}] {} -- t_true={} {} {}=t_bounded".format(
+                valid, candidate, score, "<=" if similarity == "edit_dist" else ">=", 
+                t))
+        print()
 
 
 if __name__=="__main__":
