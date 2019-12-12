@@ -135,7 +135,7 @@ Entity: surajit ch
 ```
 
 ## History
-The authors of Faerie [1] released the binary for the code, which was written in C++. The first open-source version, called NEMEX, was originally written in [Java](https://github.com/gueneumann/nemexa) by [Günter Neumann](https://www.dfki.de/~neumann/) and then maintained partly by Amir Moin at DFKI, Saarbrücken.
+The authors of Faerie [1] [released](https://dongdeng.github.io/code/faerie.tar.gz) the binary for the code, which was written in C++. The first open-source version, called NEMEX, was originally written in [Java](https://github.com/gueneumann/nemexa) by [Günter Neumann](https://www.dfki.de/~neumann/) and then maintained partly by Amir Moin at DFKI, Saarbrücken.
 
 ## References
 [1] Li, G., Deng, D., & Feng, J. (2011, June). Faerie: efficient filtering algorithms for approximate dictionary-based entity extraction. In _Proceedings of the 2011 ACM SIGMOD International Conference on Management of data_ (pp. 529-540). ACM.
