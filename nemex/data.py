@@ -84,6 +84,12 @@ class EntitiesDictionary:
     def __getitem__(self, idx):
         return self.idx2ent[idx]
     
+    def __delitem__(self, idx):
+        # get uid
+        uid = self[idx].id
+        del self.uid2idx[uid]
+        del self.idx2ent[idx]
+    
     def __iter__(self):
         for eidx in self.idx2ent:
             yield eidx
@@ -194,7 +200,6 @@ class FaerieDataStructure:
     """
     def __init__(self, ents_dict):
         self.ents_dict = ents_dict
-        self.inv_index = InvertedIndex.from_ents_dict(ents_dict)
         self._heap = list()
     
     def init_from_inv_lists(self, inv_lists):

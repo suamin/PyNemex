@@ -3,7 +3,7 @@
 import math
 import logging
 
-from nemex import FaerieDataStructure, Similarity
+from nemex import FaerieDataStructure, InvertedIndex, Similarity
 from nemex import pruning
 
 logger = logging.getLogger(__name__)
@@ -78,6 +78,8 @@ class Faerie(FaerieDataStructure, Similarity):
         
         # pre-compute length bounds
         self.init_bounds()
+        # create inverted index
+        self.inv_index = InvertedIndex.from_ents_dict(ents_dict)
     
     def _compute_upper_lower_bounds(self, e_idx):
         """Computes similarity function specific entity lower bound (denoted as 
@@ -127,13 +129,20 @@ class Faerie(FaerieDataStructure, Similarity):
         """
         all_Le = list()
         all_Te = list()
+        del_ents = list()
         
         for e_idx in self.ents_dict:
             Le, Te = self._compute_upper_lower_bounds(e_idx)
-            all_Le.append(Le)
-            all_Te.append(Te)
             Tl = self._compute_overlap_lower_bound(e_idx)
+            if any(i < 0 for i in (Le, Te, Tl)):
+                del_ents.append(e_idx)
+            else:
+                all_Le.append(Le)
+                all_Te.append(Te)
         
+        for e_idx in del_ents:
+            del self.ents_dict[e_idx]
+
         self.min_Le = min(all_Le) # T_E
         self.max_Te = max(all_Te) # ⊥_E
         
@@ -292,6 +301,7 @@ class Faerie(FaerieDataStructure, Similarity):
                 entity = self.ents_dict[e]
                 entity_len = len(entity)
                 Le, Te, Tl = entity.Le, entity.Te, entity.Tl
+                logger.debug("Analyzing e={} (id={}) Pe={} ⊥e={} Te={} Tl={}".format(entity, e, Pe, Le, Te, Tl))
                 
                 # here we set pruning arguments
                 # first common args
