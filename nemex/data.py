@@ -63,7 +63,7 @@ class EntitiesDictionary:
                 if not line:
                     continue
                 line = line.split("\t")
-                if len(line) == 0:
+                if len(line) == 1:
                     uid = None
                     string = line[0]
                 else:

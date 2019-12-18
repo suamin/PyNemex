@@ -8,13 +8,16 @@ logger = logging.getLogger(__name__)
 
 class Tokenizer:
     
-    def __init__(self, char=True, q=2, special_char="_", unique=False):
+    def __init__(self, char=True, q=2, special_char="_", unique=False, lower=True):
         self.char = char
         self.q = q
         self.special_char = special_char
         self.unique = unique
+        self.lower = lower
     
     def tokenize(self, string):
+        if self.lower:
+            string = string.lower()
         if self.char:
             if self.special_char:
                 string = string.replace(" ", self.special_char)
