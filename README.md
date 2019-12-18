@@ -46,35 +46,24 @@ for e, (i, j) in faerie(doc_tokens):
 Running the example gives results as:
 
 ```bash
-<chaudhuri, surauijt_cha>
-<chaudhuri, rauijt_chadh>
-<chaudhuri, ijt_chadhuri>
 <chaudhuri, jt_chadhuri>
-<chaudhuri, jt_chadhuris>
 <chaudhuri, t_chadhuri>
 <chaudhuri, t_chadhuris>
-<chaudhuri, t_chadhurisi>
 <chaudhuri, _chadhuri>
 <chaudhuri, _chadhuris>
 <chaudhuri, _chadhurisi>
-<chaudhuri, _chadhurisig>
 <chaudhuri, chadhuri>
 <chaudhuri, chadhuris>
 <chaudhuri, chadhurisi>
 <chaudhuri, chadhurisig>
-<chaudhuri, chadhurisigm>
-<venkatesh, ._venkaee_sh>
-<venkatesh, _venkaee_sh>
-<venkatesh, _venkaee_shg>
+<chaudhuri, hadhuri>
+<chaudhuri, hadhuris>
+<chaudhuri, hadhurisi>
+<chaudhuri, hadhurisig>
 <venkatesh, venkaee_sh>
-<venkatesh, venkaee_shg>
-<venkatesh, venkaee_shga>
-<surajit_ch, ,_surauijt_ch>
-<surajit_ch, _surauijt_ch>
-<surajit_ch, _surauijt_cha>
+<venkatesh, enkaee_sh>
 <surajit_ch, surauijt_ch>
-<surajit_ch, surauijt_cha>
-<surajit_ch, surauijt_chad>
+<surajit_ch, urauijt_ch>
 ```
 Additionally, we can add verification step:
 ```python
@@ -93,6 +82,7 @@ Which results in:
 <chaudhuri, _chadhuri>
 <chaudhuri, chadhuri>
 <chaudhuri, chadhuris>
+<chaudhuri, hadhuri>
 <venkatesh, venkaee_sh>
 <surajit_ch, surauijt_ch>
 ```
