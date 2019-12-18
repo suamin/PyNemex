@@ -192,11 +192,11 @@ class Faerie(FaerieDataStructure, Similarity):
         
         """
         candidates = list()
+        count_positions = set()
         
         for i, j in count_spans:
-            # do the actual counting here
-            for pk in Pe[i-1:j]:
-                self.count(pk, Le, Te)
+            # positions that should be counted
+            count_positions.update(Pe[i-1:j])
              
             pi, pj = Pe[i-1], Pe[j-1]
             Pe_ij = Pe[i-1:j]
@@ -225,6 +225,10 @@ class Faerie(FaerieDataStructure, Similarity):
                     s_len = p_end - p_start + 1                 # |s| = |D[p_start · · · p_end ]| 
                     if Le <= s_len <= Te:                       # ⊥e ≤ |s| ≤ Te
                         candidates.append((p_start, s_len))
+        
+        # do the actual counting
+        for pk in count_positions:
+            self.count(pk, Le, Te)
         
         # note that this should be outside the previous loop to allow counts
         # to be fully updated before this pruning step is applied
@@ -329,7 +333,7 @@ class Faerie(FaerieDataStructure, Similarity):
                 candidate_spans = self.find_candidates(Pe, Le, Te, count_spans, entity_len)
                 
                 for start, length in candidate_spans:
-                    i, j = start - 1, start + length - 1
+                    i, j = start, start + length - 1
                     yield e, (i, j)
                 
                 # make new (different) entity as current entity
