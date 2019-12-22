@@ -10,9 +10,9 @@ pip install nemex
 ## Quickstart
 Here we show a simple example to extract entities from a pre-defined dictionary.
 ```python
-import nemex
+from nemex import Nemex
+import json
 
-# 1) define the entities
 E = [
     "kaushik ch",
     "chakrabarti",
@@ -20,71 +20,99 @@ E = [
     "venkatesh",
     "surajit ch"
 ]
-
-# 2) setup tokenizer
-tokenizer = nemex.Tokenizer(char=True, q=2).tokenize
-
-# 3) create entities dictionary
-ents_dict = nemex.EntitiesDictionary.from_list(E, tokenizer)
-
-# 4) setup search algorithm
-faerie = nemex.Faerie(ents_dict, similarity="edit_dist", t=2, q=2, pruner="batch_count")
-
-    
 D = "an efficient filter for approximate membership checking. venkaee shga kamunshik kabarati, dong xin, surauijt chadhurisigmod."
 
-doc_tokens = tokenizer(D)
+nemex = Nemex(E)
+output = nemex(D)
 
-# returns pair of <entity index, (start, end) positions in doc_tokens> 
-for e, (i, j) in faerie(doc_tokens):
-    match = doc_tokens[i:j+1]
-    match = nemex.utils.qgrams_to_char(match)
-    entity = nemex.utils.qgrams_to_char(ents_dict[e].tokens)
-    print("<{}, {}>".format(entity, match))
-
+print(json.dumps(output, indent=2))
 ```
 Running the example gives results as:
 
-```bash
-<chaudhuri, jt_chadhuri>
-<chaudhuri, t_chadhuri>
-<chaudhuri, t_chadhuris>
-<chaudhuri, _chadhuri>
-<chaudhuri, _chadhuris>
-<chaudhuri, _chadhurisi>
-<chaudhuri, chadhuri>
-<chaudhuri, chadhuris>
-<chaudhuri, chadhurisi>
-<chaudhuri, chadhurisig>
-<chaudhuri, hadhuri>
-<chaudhuri, hadhuris>
-<chaudhuri, hadhurisi>
-<chaudhuri, hadhurisig>
-<venkatesh, venkaee_sh>
-<venkatesh, enkaee_sh>
-<surajit_ch, surauijt_ch>
-<surajit_ch, urauijt_ch>
-```
-Additionally, we can add verification step:
-```python
-# returns pair of <entity index, (start, end) positions in doc_tokens> 
-for e, (i, j) in faerie(doc_tokens):
-    match = doc_tokens[i:j+1]
-    match = nemex.utils.qgrams_to_char(match)
-    entity = nemex.utils.qgrams_to_char(ents_dict[e].tokens)
-    # verify
-    valid, score = nemex.Verify.check(match, entity, "edit_dist", 2)
-    if valid:
-        print("<{}, {}>".format(entity, match))
-```
-Which results in:
-```bash
-<chaudhuri, _chadhuri>
-<chaudhuri, chadhuri>
-<chaudhuri, chadhuris>
-<chaudhuri, hadhuri>
-<venkatesh, venkaee_sh>
-<surajit_ch, surauijt_ch>
+```json
+{
+  "document": "an efficient filter for approximate membership checking. venkaee shga kamunshik kabarati, dong xin, surauijt chadhurisigmod.",
+  "matches": [
+    {
+      "valid": true,
+      "entity": [
+        "chaudhuri",
+        2
+      ],
+      "score": 2,
+      "match": " chadhuri",
+      "span": [
+        108,
+        117
+      ]
+    },
+    {
+      "valid": true,
+      "entity": [
+        "chaudhuri",
+        2
+      ],
+      "score": 1,
+      "match": "chadhuri",
+      "span": [
+        109,
+        117
+      ]
+    },
+    {
+      "valid": true,
+      "entity": [
+        "chaudhuri",
+        2
+      ],
+      "score": 2,
+      "match": "chadhuris",
+      "span": [
+        109,
+        118
+      ]
+    },
+    {
+      "valid": true,
+      "entity": [
+        "chaudhuri",
+        2
+      ],
+      "score": 2,
+      "match": "hadhuri",
+      "span": [
+        110,
+        117
+      ]
+    },
+    {
+      "valid": true,
+      "entity": [
+        "venkatesh",
+        3
+      ],
+      "score": 2,
+      "match": "venkaee sh",
+      "span": [
+        57,
+        67
+      ]
+    },
+    {
+      "valid": true,
+      "entity": [
+        "surajit ch",
+        4
+      ],
+      "score": 2,
+      "match": "surauijt ch",
+      "span": [
+        100,
+        111
+      ]
+    }
+  ]
+}
 ```
 
 ## History
