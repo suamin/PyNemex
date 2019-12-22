@@ -22,8 +22,8 @@ E = [
 ]
 D = "an efficient filter for approximate membership checking. venkaee shga kamunshik kabarati, dong xin, surauijt chadhurisigmod."
 
-nemex = Nemex(E)
-output = nemex(D)
+nemex = Nemex(E) # initialize with dictionar
+output = nemex(D) # query document
 
 print(json.dumps(output, indent=2))
 ```
