@@ -36,4 +36,17 @@ class Tokenizer:
 
 
 def qgrams_to_char(s):
+    if len(s) == 1:
+        return s[0]
     return "".join([s[0]] + [s[i][-1] for i in range(1, len(s))])
+
+
+def tokens_to_whitespace_char_spans(tokens):
+    i = 0
+    spans = list() # list of tuple of (start_char_index, end_char_index) in " ".join(tokens)
+    for t in tokens:
+        start = i
+        end = i + len(t)
+        spans.append((start, end))
+        i = end + 1 # +1 for whitespace
+    return spans
