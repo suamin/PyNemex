@@ -14,3 +14,4 @@ from .utils import Tokenizer
 from .similarities import Similarity, Verify
 
 from .faerie import Faerie
+from .nemex import Nemex
