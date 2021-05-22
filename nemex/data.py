@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import collections
 import pickle
 import heapq
@@ -18,11 +16,11 @@ class Entity:
 
     Parameters
     ----------
-    uid: int
+    uid : int
         Unique identifier.
-    text: string
+    text : string
         Text string.
-    tokens: list
+    tokens : list
         Token list.
     """
 
@@ -30,6 +28,8 @@ class Entity:
         self.id = uid
         self.entity = text
         self.tokens = tokens
+
+        return
 
     @property
     def tokens(self) -> list:
@@ -44,12 +44,12 @@ class Entity:
         return self._tokens
 
     @tokens.setter
-    def tokens(self, tokens: list) -> None:
+    def tokens(self, tokens: list):
         """Sets the entities tokens.
 
         Parameters
         ----------
-        tokens: list
+        tokens : list
             Token list.
 
         """
@@ -61,7 +61,7 @@ class Entity:
         else:
             self._len = len(tokens)
 
-        return None
+        return
 
     def __len__(self) -> int:
         """Returns the length of the entities token list.
@@ -71,6 +71,7 @@ class Entity:
         Length of token list.
 
         """
+
         return self._len
 
     def __repr__(self) -> str:
@@ -99,22 +100,22 @@ class EntitiesDictionary:
         Tokenizer instance.
     """
 
-    def __init__(self, tokenizer=None) -> None:
+    def __init__(self, tokenizer=None):
         self.idx2ent = dict()
         self.uid2idx = dict()
         self.tokenizer = tokenizer
 
-        return None
+        return
 
-    def add(self, string: str, uid: int = None) -> None:
+    def add(self, string: str, uid: int = None):
         """Creates an entity from the given string and adds it to the end of the dictionary (idx2ent).
         The unique identifier points to the entities position in the dictionary (uid2idx).
 
         Parameters
         ----------
-        string: str
+        string : str
             Entity string.
-        uid: int
+        uid : int
             Unique identifier.
 
         """
@@ -136,7 +137,7 @@ class EntitiesDictionary:
         self.uid2idx[uid] = idx
         self.idx2ent[idx] = Entity(uid, string, tokens)
 
-        return None
+        return
 
     @staticmethod
     def from_tsv_file(filename: str, tokenizer=None):
@@ -156,7 +157,7 @@ class EntitiesDictionary:
 
         """
 
-        ents_dict = EntitiesDictionary(tokenizer)
+        entity_dict = EntitiesDictionary(tokenizer)
 
         # each line is tab separated id and string value
         with open(filename, encoding='utf-8', errors='ignore') as rf:
@@ -170,9 +171,9 @@ class EntitiesDictionary:
                     string = line[0]
                 else:
                     uid, string = line
-                ents_dict.add(string, uid)
+                entity_dict.add(string, uid)
 
-        return ents_dict
+        return entity_dict
 
     @staticmethod
     def from_list(list_strings: list, tokenizer=None):
@@ -192,14 +193,14 @@ class EntitiesDictionary:
 
         """
 
-        ents_dict = EntitiesDictionary(tokenizer)
+        entity_dict = EntitiesDictionary(tokenizer)
 
         for string in list_strings:
-            ents_dict.add(string, None)
+            entity_dict.add(string, None)
 
-        return ents_dict
+        return entity_dict
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Returns the length of the entity dictionary.
 
         Returns
@@ -207,6 +208,7 @@ class EntitiesDictionary:
         The length of the entity dictionary.
 
         """
+
         return len(self.idx2ent)
 
     def __getitem__(self, idx):
@@ -214,7 +216,7 @@ class EntitiesDictionary:
 
         Parameters
         ----------
-        idx: int
+        idx : int
             Entity id.
 
         Returns
@@ -225,12 +227,12 @@ class EntitiesDictionary:
 
         return self.idx2ent[idx]
 
-    def __delitem__(self, idx) -> None:
+    def __delitem__(self, idx):
         """Deletes the entity corresponding to the given entity id.
 
         Parameters
         ----------
-        idx: int
+        idx : int
             Entity id.
 
         """
@@ -239,7 +241,7 @@ class EntitiesDictionary:
         del self.uid2idx[uid]
         del self.idx2ent[idx]
 
-        return None
+        return
 
     def __iter__(self):
         """Iterates over the dictionary.
@@ -258,7 +260,7 @@ class EntitiesDictionary:
 
         Parameters
         ----------
-        uid: int
+        uid : int
             Unique identifier.
 
         Returns
@@ -269,12 +271,12 @@ class EntitiesDictionary:
 
         return self.idx2ent[self.uid2idx[uid]]
 
-    def save(self, filename: str) -> None:
+    def save(self, filename: str):
         """Saves dictionary to file.
 
         Parameters
         ----------
-        filename: str
+        filename : str
             Filename for saving data.
 
         """
@@ -287,7 +289,7 @@ class EntitiesDictionary:
             }
             pickle.dump(dump, wf)
 
-        return None
+        return
 
     @classmethod
     def load_from_file(cls, filename: str):
@@ -304,14 +306,15 @@ class EntitiesDictionary:
 
         """
 
-        ents_dict = EntitiesDictionary()
+        entity_dict = EntitiesDictionary()
+
         with open(filename, "rb") as rf:
             dump = pickle.load(rf)
-            ents_dict.idx2ent = dump["idx2ent"]
-            ents_dict.uid2idx = dump["uid2idx"]
-            ents_dict.tokenizer = dump["tokenizer"]
+            entity_dict.idx2ent = dump["idx2ent"]
+            entity_dict.uid2idx = dump["uid2idx"]
+            entity_dict.tokenizer = dump["tokenizer"]
 
-        return ents_dict
+        return entity_dict
 
 
 class InvertedIndex:
@@ -321,20 +324,22 @@ class InvertedIndex:
 
     Parameters
     ----------
-    token2ents
+    token2entities : dict
 
     """
 
-    def __init__(self, token2ents):
-        self.token2ents = token2ents
+    def __init__(self, token2entities: dict):
+        self.token2entities = token2entities
+
+        return
 
     @classmethod
-    def from_ents_dict(cls, ents_dict: EntitiesDictionary):
+    def from_entities_dict(cls, entities_dict: EntitiesDictionary):
         """Creates an inverted index from the given entity dictionary.
 
         Parameters
         ----------
-        ents_dict : EntitiesDictionary
+        entities_dict : EntitiesDictionary
             Entities dictionary.
 
         Returns
@@ -343,35 +348,35 @@ class InvertedIndex:
 
         """
 
-        token2ents = collections.defaultdict(list)
+        token2entities = collections.defaultdict(list)
 
         # for each entity in dictionary
-        for eidx, entity in ents_dict.idx2ent.items():
+        for eidx, entity in entities_dict.idx2ent.items():
             # for each token / q-gram of entity
             for token in entity.tokens:
-                token2ents[token].append(eidx)
+                token2entities[token].append(eidx)
 
-        return cls(token2ents)
+        return cls(token2entities)
 
-    def __getitem__(self, tokens: dict) -> dict:
+    def __getitem__(self, tokens: dict):
         """Returns the inverted lists for the given tokens.
 
         Parameters
         ----------
-        tokens: list
+        tokens : dict
             Token dictionary.
 
         Returns
         -------
-        Inverted sublist.
+        Inverted sub-dict.
 
         """
 
         # order preserving mapping
         inv_lists = collections.OrderedDict()
         for position, token in enumerate(tokens):
-            if token in self.token2ents:
-                inv_lists[position] = self.token2ents[token]
+            if token in self.token2entities:
+                inv_lists[position] = self.token2entities[token]
 
         return inv_lists
 
@@ -432,13 +437,23 @@ class FaerieDataStructure:
     
     """
 
-    def __init__(self, ents_dict: EntitiesDictionary):
-        self.ents_dict = ents_dict
+    def __init__(self, entities_dict: EntitiesDictionary):
+        self.entities_dict = entities_dict
         self.inv_lists = None
         self._heap = list()
-        self.current_e_indptr = 0
+        self.current_e_index_ptr = 0
+        self.V = collections.defaultdict(list)
 
-    def init_from_inv_lists(self, inv_lists: InvertedIndex) -> None:
+        # mapping from entity index to sorted list of token positions
+        self.ent2positions = collections.defaultdict(list)
+
+        # mapping from non-empty sublist token positions to the index of current
+        # top element (the element currently in heap) in inverted list
+        self.position2topidx = dict()
+
+        return
+
+    def init_from_inv_lists(self, inv_lists: InvertedIndex):
         """Faerie data-structures initialization.
         
         Creates min-heap from top elements of inverted lists. Record
@@ -451,11 +466,14 @@ class FaerieDataStructure:
             to the inverted list. Where each list is sorted in ascending order.
         
         """
+
         self.heap = inv_lists
         self.init_position_data(inv_lists)
         self.inv_lists = inv_lists
         self.reset_count()
-        self.current_e_indptr = 0
+        self.current_e_index_ptr = 0
+
+        return
 
     @property
     def heap(self) -> list:
@@ -470,12 +488,12 @@ class FaerieDataStructure:
         return self._heap
 
     @heap.setter
-    def heap(self, inv_lists: InvertedIndex) -> None:
+    def heap(self, inv_lists: InvertedIndex):
         """Inserts the inverted lists into the heap.
 
         Parameters
         ----------
-        inv_lists: InvertedIndex
+        inv_lists : InvertedIndex
             Inverted Index lists.
 
         """
@@ -485,41 +503,34 @@ class FaerieDataStructure:
         # generate inplace min-heap from list
         heapq.heapify(self._heap)
 
-        return None
+        return
 
-    def init_position_data(self, inv_lists: InvertedIndex) -> None:
+    def init_position_data(self, inv_lists: InvertedIndex):
         """Initialises the position data.
         The entity-position list - keeps for each entity, its position in the document.
         The position-topId list - keeps for each position, the top element index.
 
         Parameters
         ----------
-        inv_lists: InvertedIndex
+        inv_lists : InvertedIndex
             Inverted index lists.
 
         """
 
-        # mapping from entity index to sorted list of token positions
-        self.ent2positions = collections.defaultdict(list)
-
-        # mapping from non-empty sublist token positions to the index of current 
-        # top element (the element currently in heap) in inverted list
-        self.position2topidx = dict()
-
         # since we used ``OrderedDict`` in :meth:`~nemex.data.InvertedIndex.__getitem__`, 
-        # looping over it will return keys in asecending order
+        # looping over it will return keys in ascending order
         for position in inv_lists:
             # since we used enumeration in :meth:`~nemex.data.InvertedIndex.__getitem__`, 
-            # looping over each sublist will return token positions in asecending order
+            # looping over each sublist will return token positions in ascending order
             for eidx in inv_lists[position]:
                 self.ent2positions[eidx].append(position)
 
             # set each sub-lists' pointer where the top element index is (initially at 0)
             self.position2topidx[position] = 0
 
-        return None
+        return
 
-    def reset_count(self) -> None:
+    def reset_count(self):
         """Initialize or clear a counter for current entity being processed.
         
         Notes
@@ -532,9 +543,12 @@ class FaerieDataStructure:
         ```
         
         """
+
         self.V = collections.defaultdict(lambda: collections.defaultdict(int))
 
-    def count(self, position: int, min_len: int, max_len: int) -> None:
+        return
+
+    def count(self, position: int, min_len: int, max_len: int):
         """Increment count of entity's occurrence in relevant positions.
         
         Parameters
@@ -555,6 +569,7 @@ class FaerieDataStructure:
         See pg. 532 second column last para for a good running example.
         
         """
+
         for cl in range(min_len, max_len + 1):
             # relevant entries for this increment starts from ``start_idx`` 
             # and goes up to ``position``; less than 0 case: when looking 
@@ -567,6 +582,8 @@ class FaerieDataStructure:
                 # l = length to consider before position j 
                 # (effectively starting at j-l+1 to j for substring D[j-l+1, l])
                 self.V[j][cl] += 1
+
+        return
 
     def step(self, e: Entity):
         """A Faerie step to update its data structures.
@@ -583,7 +600,9 @@ class FaerieDataStructure:
             7. Return popped entity, its position and stop flag.
         
         """
+
         stop = False
+
         try:
             # pop the top element from heap
             ei = heapq.heappop(self.heap)
@@ -593,11 +612,11 @@ class FaerieDataStructure:
             pi = None
         else:
             if ei != e:
-                self.current_e_indptr = 0
+                self.current_e_index_ptr = 0
 
-            pi = self.ent2positions[ei][self.current_e_indptr]
+            pi = self.ent2positions[ei][self.current_e_index_ptr]
             self.position2topidx[pi] += 1  # increment top pointer of sublist at position pi
-            self.current_e_indptr += 1
+            self.current_e_index_ptr += 1
 
             pi_top_pointer = self.position2topidx[pi]
 

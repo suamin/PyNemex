@@ -1,7 +1,6 @@
-# -*- coding: utf-8 -*-
-
 import collections
 import logging
+
 from typing import List, Tuple
 
 
@@ -10,6 +9,8 @@ logger = logging.getLogger(__name__)
 
 class Tokenizer:
     """Tokenizer class.
+
+    TODO: Documentation
 
     Parameters
     ----------
@@ -23,6 +24,7 @@ class Tokenizer:
         If true, preserves order with uniqueness.
     lower : bool
         If true, converts document to lower case.
+
     """
 
     def __init__(self, char: bool = True, q: int = 2, special_char: str = "_", unique: bool = False, lower: bool = True):
@@ -31,6 +33,8 @@ class Tokenizer:
         self.special_char = special_char
         self.unique = unique
         self.lower = lower
+
+        return
     
     def tokenize(self, string: str) -> list:
         """Tokenizes the string and returns the tokens as list.
@@ -42,7 +46,8 @@ class Tokenizer:
 
         Returns
         -------
-        A list of `q`-grams.
+        A list of q-grams.
+
         """
 
         # lower
@@ -100,16 +105,20 @@ def tokens_to_whitespace_char_spans(tokens: list) -> List[Tuple[int, int]]:
 
     Returns
     -------
-    ???
+    TODO: Documentation
 
     """
 
     i = 0
-    spans = list()  # list of tuple of (start_char_index, end_char_index) in " ".join(tokens)
+
+    # list of tuple of (start_char_index, end_char_index) in " ".join(tokens)
+    spans = list()
     for t in tokens:
         start = i
         end = i + len(t)
         spans.append((start, end))
-        i = end + 1  # +1 for whitespace
+
+        # +1 for whitespace
+        i = end + 1
 
     return spans

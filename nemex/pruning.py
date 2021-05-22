@@ -1,7 +1,6 @@
-# -*- coding: utf-8 -*-
-
 import math
 import logging
+
 from typing import List
 
 
@@ -22,21 +21,24 @@ class NoPruning:
         Parameters
         ----------
         Pe : list
-            sorted position list
+            Sorted position list.
         Le : int
-            lower bound of |s| = |G(s)| (number of s's q-grams)
+            Lower bound of |s| = |G(s)| (number of s's q-grams).
         Te : int
-            upper bound of |s| = |G(s)| (number of s's q-grams)
+            Upper bound of |s| = |G(s)| (number of s's q-grams).
         args :
 
-        Returns
+        Yields
         -------
+        Start and end position of invalid (removable) window.
 
         """
 
         for i in range(1, len(Pe)+1):
             for j in range(i+1, len(Pe)+1):
                 yield i, j
+
+        return
 
 
 class LazyCountPruning:
@@ -55,17 +57,18 @@ class LazyCountPruning:
         Parameters
         ----------
         Pe : list
-            sorted position list
+            Sorted position list.
         Le : int
-            lower bound of |s| = |G(s)| (number of s's q-grams)
+            Lower bound of |s| = |G(s)| (number of s's q-grams).
         Te : int
-            upper bound of |s| = |G(s)| (number of s's q-grams)
+            Upper bound of |s| = |G(s)| (number of s's q-grams).
         Tl : int
-            lower bound of shared tokens between e and s (lazy-count bound)
+            Lower bound of shared tokens between e and s (lazy-count bound).
         args:
 
-        Returns
+        Yields
         -------
+        Start and end position of invalid (removable) window.
 
         """
 
@@ -88,21 +91,22 @@ class BucketCountPruning:
         Parameters
         ----------
         Pe : list
-            sorted position list
+            Sorted position list.
         Le : int
-            lower bound of |s| = |G(s)| (number of s's q-grams)
+            Lower bound of |s| = |G(s)| (number of s's q-grams).
         Te : int
-            upper bound of |s| = |G(s)| (number of s's q-grams)
+            Upper bound of |s| = |G(s)| (number of s's q-grams).
         Tl  : int
-            lower bound of shared tokens between e and s (lazy-count bound)
+            Lower bound of shared tokens between e and s (lazy-count bound)
         tighter_bound_func :
-            tighter bound for edit distance and edit similarity
+            Tighter bound for edit distance and edit similarity.
         bound_args :
-            tighter bound arguments
+            Tighter bound arguments.
 
-        Returns
+        Yields
         -------
-        Start and end position of invalid (prunable) window.
+        Start and end position of invalid (removable) window.
+
         """
 
         # lazy-count pruning: |Pe| <= Tl < T (Lemma 3)
@@ -126,13 +130,14 @@ class BucketCountPruning:
         Parameters
         ----------
         Pe : list
-            sorted position list
+            Sorted position list.
         t : int
-            threshold
+            Threshold.
 
-        Returns
+        Yields
         -------
         Start and end position of current bucket window.
+
         """
 
         # initialize window indexes
@@ -171,17 +176,17 @@ class BatchCountPruning:
         Parameters
         ----------
         Pe : list
-            sorted position list
+            Sorted position list.
         Le : int
-            lower bound of |s| = |G(s)| (number of s's q-grams)
+            Lower bound of |s| = |G(s)| (number of s's q-grams).
         Te : int
-            upper bound of |s| = |G(s)| (number of s's q-grams)
+            Upper bound of |s| = |G(s)| (number of s's q-grams).
         Tl : int
-            lower bound of shared tokens between e and s (lazy-count bound)
+            Lower bound of shared tokens between e and s (lazy-count bound).
         tighter_bound_func :
-            tighter bound for edit distance and edit similarity
+            Tighter bound for edit distance and edit similarity.
         bound_args :
-            tighter bound arguments
+            Tighter bound arguments.
 
         Returns
         -------
@@ -217,23 +222,24 @@ class BatchCountPruning:
         Parameters
         ----------
         i : int
-            window start position
+            Window start position.
         j : int
-            window end position
+            Window end position.
         Pe : list
-            sorted position list
+            Sorted position list.
         Le : int
-            lower bound of |s| = |G(s)| (number of s's q-grams)
+            Lower bound of |s| = |G(s)| (number of s's q-grams).
         Te : int
-            upper bound of |s| = |G(s)| (number of s's q-grams)
+            Upper bound of |s| = |G(s)| (number of s's q-grams).
         Tl : int
-            lower bound of shared tokens between e and s (lazy-count bound)
+            Lower bound of shared tokens between e and s (lazy-count bound).
         tighter_Te : int
-            even tighter upper bound Te
+            Even tighter upper bound Te.
 
         Returns
         -------
-        True if window is ``possible candidate window''.
+        True, if window is ``possible candidate window''.
+
         """
 
         # (j-1)+1 = j (-1 due to 0-based indexing and +1 because python list is non-inclusive)
@@ -261,14 +267,15 @@ class BatchCountPruning:
         Parameters
         ----------
         Pe : list
-            sorted position list
+            Sorted position list.
         Te : int
-            upper bound of |s| = |G(s)| (number of s's q-grams)
+            Upper bound of |s| = |G(s)| (number of s's q-grams).
         Tl : int
-            lower bound of shared tokens between e and s (lazy-count bound)
+            Lower bound of shared tokens between e and s (lazy-count bound).
 
-        Returns
+        Yields
         -------
+        TODO: Documentation
 
         """
 
@@ -301,19 +308,20 @@ class BatchCountPruning:
         Parameters
         ----------
         i : int
-            window start position
+            Window start position.
         j : int
-            window end position
+            Window end position.
         Pe : list
-            sorted position list
+            Sorted position list.
         Te : int
-            upper bound of |s| = |G(s)| (number of s's q-grams)
+            Upper bound of |s| = |G(s)| (number of s's q-grams).
         Tl : int
-            lower bound of shared tokens between e and s (lazy-count bound)
+            Lower bound of shared tokens between e and s (lazy-count bound).
 
         Returns
         -------
-        Lower bound of shifted window
+        Lower bound of shifted window.
+
         """
 
         lower = i
@@ -349,13 +357,13 @@ class BatchCountPruning:
         Parameters
         ----------
         i : int
-            window start position
+            Window start position.
         j : int
-            window end position
+            Window end position.
         Pe : list
-            sorted position list
+            Sorted position list.
         Te : int
-            upper bound of |s| = |G(s)| (number of s's q-grams)
+            Upper bound of |s| = |G(s)| (number of s's q-grams).
 
         Returns
         -------

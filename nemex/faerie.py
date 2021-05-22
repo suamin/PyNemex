@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
-
 import math
 import logging
-from typing import List, Tuple
 
+from typing import List, Tuple
 from nemex import FaerieDataStructure, InvertedIndex, Similarity, EntitiesDictionary
 from nemex import pruning
 
@@ -23,7 +21,7 @@ class Faerie(FaerieDataStructure, Similarity):
 
     Parameters
     ----------
-    ents_dict : :class:`~nemex.data.EntitiesDictionary`
+    entities_dict : :class:`~nemex.data.EntitiesDictionary`
         Instance of entities dictionary.
 
     similarity : str, {"cosine", "jaccard", "dice", "edit_dist", "edit_sim"}, optional
@@ -55,10 +53,10 @@ class Faerie(FaerieDataStructure, Similarity):
 
     """
 
-    def __init__(self, ents_dict: EntitiesDictionary, similarity: str = "cosine", t: float = 0.7, q: int = None,
+    def __init__(self, entities_dict: EntitiesDictionary, similarity: str = "cosine", t: float = 0.7, q: int = None,
                  pruner:  str = "batch_count"):
 
-        FaerieDataStructure.__init__(self, ents_dict)
+        FaerieDataStructure.__init__(self, entities_dict)
         Similarity.__init__(self)
 
         # setup similarity interface
@@ -88,8 +86,13 @@ class Faerie(FaerieDataStructure, Similarity):
         # pre-compute length bounds
         self.init_bounds()
 
+        self.min_Le = 0
+        self.max_Te = 0
+
         # create inverted index
-        self.inv_index = InvertedIndex.from_ents_dict(ents_dict)
+        self.inv_index = InvertedIndex.from_entities_dict(entities_dict)
+
+        return
     
     def _compute_upper_lower_bounds(self, e_idx: int) -> (int, int):
         """Computes similarity function specific entity lower bound (denoted as
@@ -98,7 +101,7 @@ class Faerie(FaerieDataStructure, Similarity):
 
         Parameters
         ----------
-        e_idx: int
+        e_idx : int
             Entity id.
 
         Returns
@@ -108,7 +111,7 @@ class Faerie(FaerieDataStructure, Similarity):
         """
 
         # get entity length
-        dl = len(self.ents_dict[e_idx])
+        dl = len(self.entities_dict[e_idx])
         
         if self.similarity == 'edit_sim':
             Le = self.find_min_size(dl, self.t, self.q)
@@ -118,8 +121,8 @@ class Faerie(FaerieDataStructure, Similarity):
             Te = self.find_max_size(dl, self.t)
         
         # add inplace as entity's class attribute
-        self.ents_dict[e_idx].Le = Le
-        self.ents_dict[e_idx].Te = Te
+        self.entities_dict[e_idx].Le = Le
+        self.entities_dict[e_idx].Te = Te
         
         return Le, Te
     
@@ -129,7 +132,8 @@ class Faerie(FaerieDataStructure, Similarity):
 
         Parameters
         ----------
-        e_idx
+        e_idx : int
+            Entity id.
 
         Returns
         -------
@@ -138,7 +142,7 @@ class Faerie(FaerieDataStructure, Similarity):
         """
 
         # get entity length
-        dl = len(self.ents_dict[e_idx])
+        dl = len(self.entities_dict[e_idx])
         
         if self.similarity == "edit_sim" or self.similarity == "edit_dist":
             Tl = self.find_lower_bound_of_entity(dl, self.t, self.q)
@@ -146,11 +150,11 @@ class Faerie(FaerieDataStructure, Similarity):
             Tl = self.find_lower_bound_of_entity(dl, self.t)
         
         # add inplace as entity's class attribute
-        self.ents_dict[e_idx].Tl = Tl
+        self.entities_dict[e_idx].Tl = Tl
         
         return Tl
     
-    def init_bounds(self) -> None:
+    def init_bounds(self):
         """Computes valid substring upper and lower bounds for all entities (Te, ⊥e),
         their global versions (TE, ⊥E) and overlap similarity lower bound (Tl).
 
@@ -160,7 +164,7 @@ class Faerie(FaerieDataStructure, Similarity):
         all_Te = list()
         del_ents = list()
         
-        for e_idx in self.ents_dict:
+        for e_idx in self.entities_dict:
             Le, Te = self._compute_upper_lower_bounds(e_idx)
             Tl = self._compute_overlap_lower_bound(e_idx)
             if any(i < 0 for i in (Le, Te, Tl)):
@@ -170,14 +174,14 @@ class Faerie(FaerieDataStructure, Similarity):
                 all_Te.append(Te)
         
         for e_idx in del_ents:
-            del self.ents_dict[e_idx]
+            del self.entities_dict[e_idx]
 
         self.min_Le = min(all_Le)  # T_E
         self.max_Te = max(all_Te)  # ⊥_E
         
         logger.info("Global length constraints with this dictionary : {} <= |s| <= {}".format(self.min_Le, self.max_Te))
 
-        return None
+        return
     
     def find_candidates(self, Pe: List[int], Le: int, Te: int, count_spans: List[Tuple[int, int]],
                         entity_len: int) -> Tuple[int, int]:
@@ -223,6 +227,7 @@ class Faerie(FaerieDataStructure, Similarity):
         met, D[p_start. . .p_end] is a final candidate.
         
         """
+
         candidates = list()
         count_positions = set()
         
@@ -268,30 +273,35 @@ class Faerie(FaerieDataStructure, Similarity):
             # if |e ∩ s| >= T (where overlap size is estimated by count array)
             if self.check_overlap_similarity(candidate_start, candidate_len, entity_len):
                 yield candidate_start, candidate_len
+
+        return
     
     def check_overlap_similarity(self, candidate_start: int, candidate_len: int, entity_len: int) -> bool:
-        """Computes tau-min overlap `T` and compares with entity's count occurrence.
-        If
+        """Computes the overlap similarity threshold `T` and compares with entity's count occurrence.
 
         Parameters
         ----------
         candidate_start : int
+            TODO: Documentation
 
         candidate_len : int
+            TODO: Documentation
 
         entity_len : int
+            TODO: Documentation
 
         Returns
         -------
+        TODO: Documentation
 
         """
         
-        # compute overlap threshold
+        # compute overlap similarity threshold
         if self.similarity in ("edit_sim", "edit_dist"):
             T = self.find_tau_min_overlap(entity_len, candidate_len, self.t, self.q)
         else:
             T = self.find_tau_min_overlap(entity_len, candidate_len, self.t)
-        
+
         count_overlap = self.V[candidate_start][candidate_len]
         
         if count_overlap >= T:
@@ -308,6 +318,7 @@ class Faerie(FaerieDataStructure, Similarity):
             A convenience method around single Faerie update.
         
         """
+
         # get inverted lists
         inv_lists = self.inv_index[doc_tokens]
         
@@ -350,7 +361,7 @@ class Faerie(FaerieDataStructure, Similarity):
                 
                 # get entity specific attributes
                 # note: len of entity is also pre-computed
-                entity = self.ents_dict[e]
+                entity = self.entities_dict[e]
                 entity_len = len(entity)
                 Le, Te, Tl = entity.Le, entity.Te, entity.Tl
                 logger.debug("Analyzing e={} (id={}) Pe={} ⊥e={} Te={} Tl={}".format(entity, e, Pe, Le, Te, Tl))
@@ -398,3 +409,5 @@ class Faerie(FaerieDataStructure, Similarity):
         
         logger.debug("Total iterations: {}".format(i))
         logger.debug("Heap-popped elements sequence: {}".format(pop_sequence[:-1]))
+
+        return

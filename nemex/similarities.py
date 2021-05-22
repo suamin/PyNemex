@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
-
 import math
+
 from Levenshtein import editops
 from typing import Tuple, Union
 
@@ -344,7 +343,7 @@ class DiceSimilarity:
             Length of dictionary entity, i.e., number of tokens.
         Pe_ij_len : int
             Length of sorted position list.
-        delta: float
+        delta : float
             Similarity threshold.
 
         Returns

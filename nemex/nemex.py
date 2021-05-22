@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import logging
 import time
 
@@ -21,31 +19,31 @@ class Nemex:
 
     Parameters
     ----------
-    list_or_file_ents: {list, Any}
+    list_or_file_entities : {list, str}
         List or file with entities.
-    char: bool
+    char : bool
         If true, performs character-level similarity instead of token-level.
-    q: int
+    q : int
         Size of q-grams.
-    special_char: str
+    special_char : str
         Special character for substitution of space character.
-    unique: bool
+    unique : bool
         If true, preserves order with uniqueness.
-    lower: bool
+    lower : bool
         If true, converts document to lower case.
-    similarity: str
+    similarity : str
         Similarity method.
-    t: int
+    t : int
         Similarity threshold.
-    pruner: str
+    pruner : str
         Pruning method.
-    verify: bool
+    verify : bool
         If true, verify candidates.
     """
 
-    def __init__(self, list_or_file_ents, char=True, q: int = 2, special_char: str = "_", unique: bool = False,
+    def __init__(self, list_or_file_entities, char=True, q: int = 2, special_char: str = "_", unique: bool = False,
                  lower: bool = True, similarity: str = "edit_dist", t: int = 2, pruner: str = "batch_count",
-                 verify: bool = True) -> None:
+                 verify: bool = True):
 
         # character-level
         if char:
@@ -82,11 +80,15 @@ class Nemex:
         T = time.time()
 
         # check input
-        if isinstance(list_or_file_ents, list):
-            self.E = EntitiesDictionary.from_list(list_or_file_ents, self.tokenizer.tokenize)
-        else:
+        if isinstance(list_or_file_entities, list):
+            self.E = EntitiesDictionary.from_list(list_or_file_entities, self.tokenizer.tokenize)
+        elif isinstance(list_or_file_entities, str):
             # else it is file of tsv id\tent lines or just text of ent lines
-            self.E = EntitiesDictionary.from_tsv_file(list_or_file_ents, self.tokenizer.tokenize)
+            self.E = EntitiesDictionary.from_tsv_file(list_or_file_entities, self.tokenizer.tokenize)
+        else:
+            logger.error("Bad input type.")
+            logger.error("Expected `list` or `str`, but got ", type(list_or_file_entities))
+            exit(0)
 
         # cache
         self.cache_ent_repr = dict()
@@ -99,16 +101,16 @@ class Nemex:
         self.faerie = Faerie(self.E, similarity=similarity, t=t, q=q, pruner=pruner)
         self.verify = verify
 
-        return None
+        return
     
     def __call__(self, document: str, valid_only: bool = True) -> dict:
         """Executes the Nemex algorithm.
 
         Parameters
         ----------
-        document: str
+        document : str
             Text document.
-        valid_only: bool
+        valid_only : bool
             If true, use only valid substrings.
 
         Returns
