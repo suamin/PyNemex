@@ -1,5 +1,5 @@
 import unittest
-import nemex
+from main import Main
 
 
 class TestBatchCount(unittest.TestCase):
@@ -15,7 +15,7 @@ class TestBatchCount(unittest.TestCase):
             "At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, " \
             "no sea takimata sanctus est Lorem ipsum dolor sit amet."
 
-        self.dict = [
+        self.e_dict = [
             "lab",
             "elirt",
             "seddiam",
@@ -33,22 +33,13 @@ class TestBatchCount(unittest.TestCase):
         self.special_char = "_"
         self.char = True
         self.unique = False
+        self.verified_only = True
 
-        #
-        self.tokenizer = nemex.Tokenizer(self.char, self.q, self.special_char, self.unique).tokenize
-        self.ents_dict = nemex.EntitiesDictionary.from_list(self.dict, self.tokenizer)
-
-        #
-        self.faerie = nemex.Faerie(self.ents_dict, self.similarity, self.t, self.q, self.pruner)
-
-        self.doc_tokens = self.tokenizer(self.doc)
-
-        #
         return None
 
     # full tokens
     def test_1_tokens_correct(self) -> None:
-        self.dict = [
+        self.e_dict = [
             "accusam",
             "takimata",
             "sanctus",
@@ -57,11 +48,26 @@ class TestBatchCount(unittest.TestCase):
             "ut"
         ]
 
+        main = Main(
+            doc=self.doc,
+            entity_dict=self.e_dict,
+            q_size=self.q,
+            sim_thresh=self.t,
+            char=self.char,
+            unique=self.unique,
+            pruner=self.pruner,
+            similarity=self.similarity,
+            verified_only=self.verified_only,
+            special_char=self.special_char
+        )
+
+        main.run()
+
         return
 
     # last character missing
     def test_last_missing_correct(self) -> None:
-        self.dict = [
+        self.e_dict = [
             "nonum",
             "dolor",
             "just",
@@ -74,7 +80,7 @@ class TestBatchCount(unittest.TestCase):
 
     # first character missing
     def test_first_missing_correct(self) -> None:
-        self.dict = [
+        self.e_dict = [
             "ed",
             "orem",
             "anctus",
@@ -86,7 +92,7 @@ class TestBatchCount(unittest.TestCase):
 
     # test 2 correct tokens
     def test_2_tokens_correct(self) -> None:
-        self.dict = [
+        self.e_dict = [
             "Lorem ipsum",
             "sed diam",
             "takimata sanctus",
@@ -97,7 +103,7 @@ class TestBatchCount(unittest.TestCase):
 
     # test 3 correct tokens
     def test_3_tokens_correct(self) -> None:
-        self.dict = [
+        self.e_dict = [
             "Lorem ipsum dolor",
             "sed diam voluptua",
             "justo duo dolores",
@@ -113,7 +119,7 @@ class TestBatchCount(unittest.TestCase):
 
     # dummy
     def test_x(self) -> None:
-        self.dict = [
+        self.e_dict = [
             "",
             "",
             "",
@@ -123,3 +129,6 @@ class TestBatchCount(unittest.TestCase):
         ]
         return None
 
+
+if __name__ == '__main__':
+    unittest.main()

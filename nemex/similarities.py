@@ -2,6 +2,7 @@ import math
 
 from Levenshtein import editops
 from typing import Tuple, Union
+from nemex.utils import Sim
 
 
 class JaccardSimilarity:
@@ -615,11 +616,11 @@ class Similarity:
     def __init__(self):
         self.similarity = None
         self._sims = {
-            'jaccard': JaccardSimilarity(),
-            'cosine': CosineSimilarity(),
-            'dice': DiceSimilarity(),
-            'edit_sim': EditSimilarity(),
-            'edit_dist': EditDistance()
+            Sim.JACCARD: JaccardSimilarity(),
+            Sim.COSINE: CosineSimilarity(),
+            Sim.DICE: DiceSimilarity(),
+            Sim.EDIT_SIM: EditSimilarity(),
+            Sim.EDIT_DIST: EditDistance()
         }
     
     def find_tau_min_overlap(self, *args):
@@ -635,12 +636,12 @@ class Similarity:
         return self._sims[self.similarity].find_lower_bound_of_entity(*args)
     
     def tighter_upper_window_size(self, *args):
-        if self.similarity in ("edit_dist", "edit_sim"):
+        if self.similarity in Sim.CHAR_BASED:
             raise AttributeError("Tighter upper window size is not supported with {}".format(self.similarity))
         return self._sims[self.similarity].tighter_upper_window_size(*args)
     
     def tighter_neighbor_bound(self, *args):
-        if self.similarity not in ("edit_dist", "edit_sim"):
+        if self.similarity not in Sim.CHAR_BASED:
             raise AttributeError("Tighter neighbor bound is not supported with {}".format(self.similarity))
         return self._sims[self.similarity].tighter_neighbor_bound(*args)
 
@@ -790,31 +791,31 @@ class Verify:
         true_t: float = 0.0
         valid: bool = False
 
-        if method in ("jaccard", "cosine", "dice"):
+        if method in Sim.TOKEN_BASED:
         
             if not (isinstance(r, list) and isinstance(s, list)):
                 raise ValueError("Both candidate and entity are expected to be list of tokens")
             
-            if method == "jaccard":
+            if method == Sim.JACCARD:
                 true_t = jaccard(r, s)
-            elif method == "cosine":
+            elif method == Sim.COSINE:
                 true_t = cosine(r, s)
-            elif method == "dice":
+            elif method == Sim.DICE:
                 true_t = dice(r, s)
             
             valid = true_t >= t
             
             return valid, true_t
         
-        elif method in ("edit_dist", "edit_sim"):
+        elif method in Sim.CHAR_BASED:
             
             if not (isinstance(r, str) and isinstance(s, str)):
                 raise ValueError("Both candidate and entity are expected to be strings")
             
-            if method == "edit_dist":
+            if method == Sim.EDIT_DIST:
                 true_t = edit_dist(r, s)
                 valid = true_t <= t
-            elif method == "edit_sim":
+            elif method == Sim.EDIT_SIM:
                 true_t = edit_sim(r, s)
                 valid = true_t >= t
             

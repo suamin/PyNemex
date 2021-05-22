@@ -1,6 +1,7 @@
 import collections
 import logging
 
+from enum import Enum
 from typing import List, Tuple
 
 
@@ -73,6 +74,31 @@ class Tokenizer:
             del temp
 
         return tokens
+
+
+class Pruner(object):
+    """
+    Pruner enum.
+    """
+
+    BATCH_COUNT: str = "batch_count"
+    BUCKET_COUNT: str = "bucket_count"
+    LAZY_COUNT: str = "lazy_count"
+
+
+class Sim(object):
+    """
+    Similarity enum.
+    """
+
+    JACCARD: str = "jaccard"
+    COSINE: str = "cosine"
+    DICE: str = "dice"
+    EDIT_DIST: str = "edit_dist"
+    EDIT_SIM: str = "edit_sim"
+
+    TOKEN_BASED = (JACCARD, COSINE, DICE)
+    CHAR_BASED = (EDIT_DIST, EDIT_SIM)
 
 
 def qgrams_to_char(s: list) -> str:

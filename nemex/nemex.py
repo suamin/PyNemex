@@ -1,9 +1,7 @@
-import logging
 import time
 
-from nemex import utils
 from .data import EntitiesDictionary
-from .utils import Tokenizer
+from .utils import *
 from .similarities import Verify
 from .faerie import Faerie
 
@@ -42,15 +40,15 @@ class Nemex:
     """
 
     def __init__(self, list_or_file_entities, char=True, q: int = 2, special_char: str = "_", unique: bool = False,
-                 lower: bool = True, similarity: str = "edit_dist", t: int = 2, pruner: str = "batch_count",
+                 lower: bool = True, similarity: str = Sim.EDIT_DIST, t: int = 2, pruner: str = Pruner.BATCH_COUNT,
                  verify: bool = True):
 
         # character-level
         if char:
-            if similarity not in ("edit_dist", "edit_sim"):
+            if similarity not in Sim.CHAR_BASED:
                 raise ValueError("Change similarity method to 'edit_dist' or 'edit_sim' for character level.")
 
-            if similarity == "edit_dist":
+            if similarity == Sim.EDIT_DIST:
                 t = int(t)
                 if not t >= 1:
                     raise ValueError("Edit distance threshold must be >= 1")
@@ -65,7 +63,7 @@ class Nemex:
 
         # token-level
         else:
-            if similarity in ("edit_dist", "edit_sim"):
+            if similarity in Sim.CHAR_BASED:
                 raise ValueError("Change similarity method to 'cosine', 'dice' or 'jaccard' for token level.")
 
             if not (0. < t <= 1.0):
@@ -127,12 +125,12 @@ class Nemex:
 
         # char-level
         if self.char:
-            doc_tokens_str = utils.qgrams_to_char(doc_tokens).replace(self.tokenizer.special_char, " ")
+            doc_tokens_str = qgrams_to_char(doc_tokens).replace(self.tokenizer.special_char, " ")
         else:
             doc_tokens_str = " ".join(doc_tokens)
 
         # init spans
-        spans = utils.tokens_to_whitespace_char_spans(doc_tokens)
+        spans = tokens_to_whitespace_char_spans(doc_tokens)
 
         # init output
         output = {"document": doc_tokens_str, "matches": list()}
@@ -152,7 +150,7 @@ class Nemex:
                 match = doc_tokens_str[start:end]
                 
                 if e not in self.cache_ent_repr:
-                    entity = utils.qgrams_to_char(self.E[e].tokens).replace(self.tokenizer.special_char, " ")
+                    entity = qgrams_to_char(self.E[e].tokens).replace(self.tokenizer.special_char, " ")
                     self.cache_ent_repr[e] = entity
                 else:
                     entity = self.cache_ent_repr[e]
@@ -164,6 +162,7 @@ class Nemex:
                     "score": None,
                     "valid": None
                 })
+
                 if self.verify:
                     valid, score = Verify.check(match, entity, self.faerie.similarity, self.faerie.t)
                     output["matches"][-1]["score"] = score
@@ -187,6 +186,7 @@ class Nemex:
                     "score": None,
                     "valid": None
                 })
+
                 if self.verify:
                     valid, score = Verify.check(
                         match_tokens, self.E[e].tokens, self.faerie.similarity, self.faerie.t

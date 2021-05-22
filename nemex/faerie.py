@@ -4,6 +4,7 @@ import logging
 from typing import List, Tuple
 from nemex import FaerieDataStructure, InvertedIndex, Similarity, EntitiesDictionary
 from nemex import pruning
+from nemex.utils import Pruner, Sim
 
 
 logger = logging.getLogger(__name__)
@@ -53,31 +54,34 @@ class Faerie(FaerieDataStructure, Similarity):
 
     """
 
-    def __init__(self, entities_dict: EntitiesDictionary, similarity: str = "cosine", t: float = 0.7, q: int = None,
-                 pruner:  str = "batch_count"):
+    def __init__(self, entities_dict: EntitiesDictionary, similarity: str = Sim.COSINE, t: float = 0.7, q: int = None,
+                 pruner: str = Pruner.BATCH_COUNT):
 
         FaerieDataStructure.__init__(self, entities_dict)
         Similarity.__init__(self)
 
         # setup similarity interface
-        if similarity in ("edit_dist", "edit_sim") and q is None:
+        if similarity in Sim.CHAR_BASED and q is None:
             raise ValueError("`q` is required for char-based similarity and distance methods")
 
         self.similarity = similarity
 
-        if similarity != "edit_dist" and (0.0 <= t > 1.0):
+        if similarity != Sim.EDIT_DIST and (0.0 <= t > 1.0):
             raise ValueError("`t` must be in the range (0, 1] for similarity functions")
 
         self.t = t
         self.q = q
         
         # setup pruner
-        if pruner == "batch_count":
+        if pruner == Pruner.BATCH_COUNT:
             self.pruner = pruning.BatchCountPruning
-        elif pruner == "bucket_count":
+
+        elif pruner == Pruner.BUCKET_COUNT:
             self.pruner = pruning.BucketCountPruning
-        elif pruner == "lazy_count":
+
+        elif pruner == Pruner.LAZY_COUNT:
             self.pruner = pruning.LazyCountPruning
+
         else:
             self.pruner = pruning.NoPruning
 
@@ -113,7 +117,7 @@ class Faerie(FaerieDataStructure, Similarity):
         # get entity length
         dl = len(self.entities_dict[e_idx])
         
-        if self.similarity == 'edit_sim':
+        if self.similarity == Sim.EDIT_SIM:
             Le = self.find_min_size(dl, self.t, self.q)
             Te = self.find_max_size(dl, self.t, self.q)
         else:
@@ -144,7 +148,7 @@ class Faerie(FaerieDataStructure, Similarity):
         # get entity length
         dl = len(self.entities_dict[e_idx])
         
-        if self.similarity == "edit_sim" or self.similarity == "edit_dist":
+        if self.similarity in Sim.CHAR_BASED:
             Tl = self.find_lower_bound_of_entity(dl, self.t, self.q)
         else:
             Tl = self.find_lower_bound_of_entity(dl, self.t)
@@ -297,7 +301,7 @@ class Faerie(FaerieDataStructure, Similarity):
         """
         
         # compute overlap similarity threshold
-        if self.similarity in ("edit_sim", "edit_dist"):
+        if self.similarity in Sim.CHAR_BASED:
             T = self.find_tau_min_overlap(entity_len, candidate_len, self.t, self.q)
         else:
             T = self.find_tau_min_overlap(entity_len, candidate_len, self.t)
@@ -372,21 +376,25 @@ class Faerie(FaerieDataStructure, Similarity):
                 
                 # "batch_count" has tighter upper bounds on window size for jaccard, 
                 # dice and cosine which needs to be taken care of (cf. last lines pg. 534)
-                if self.prune_method == "batch_count":
+                if self.prune_method == Pruner.BATCH_COUNT:
                     pruner_args = pruner_args + (self.tighter_upper_window_size, entity_len, self.t)
                 
                 # "bucket_count" has tighter neighbor difference bounds for edit distance
                 # and similarity which needs to be taken care of (cf. pg. 534 first column 5th para)
-                elif self.prune_method == "bucket_count":
-                    if self.similarity == "edit_sim":
+                elif self.prune_method == Pruner.BUCKET_COUNT:
+
+                    if self.similarity == Sim.EDIT_SIM:
                         bound_args = (entity_len, self.t, self.q)
-                    elif self.similarity == "edit_dist":
+
+                    elif self.similarity == Sim.EDIT_DIST:
                         bound_args = (self.t, self.q)
+
                     else:
                         bound_args = ()
+
                     pruner_args = pruner_args + (self.tighter_neighbor_bound, *bound_args)
                 
-                # apply pruning techniques to count entity's occurence in filtered candidates only
+                # apply pruning techniques to count entity's occurrence in filtered candidates only
                 count_spans = self.pruner.filter(*pruner_args)
 
                 # further prune to get final candidates

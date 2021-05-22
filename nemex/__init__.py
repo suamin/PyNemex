@@ -10,7 +10,7 @@ from .pruning import (
     BucketCountPruning, BatchCountPruning
 )
 
-from .utils import Tokenizer
+from .utils import Tokenizer, Pruner, Sim
 from .similarities import Similarity, Verify
 
 from .faerie import Faerie

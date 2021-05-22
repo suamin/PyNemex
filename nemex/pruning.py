@@ -116,7 +116,8 @@ class BucketCountPruning:
                 Te_diff_Tl = tighter_bound_func(*bound_args)
 
             # tighter bound is not supported for jaccard, cosine and dice -- uses Te - Tl
-            except Exception:
+            except Exception as e:
+                logger.info(e)
                 Te_diff_Tl = Te - Tl
 
             for i, j in cls.iter_bucket_spans(Pe, Te_diff_Tl):
@@ -149,15 +150,19 @@ class BucketCountPruning:
         while True:
             try:
                 pi, pj = Pe[i-1], Pe[j-1]
-            except IndexError:
+
+            except IndexError as e:
+                logger.info(e)
                 l = i
                 yield k, l
                 break
+
             else:
                 if pj - pi + 1 > t:
                     l = i
                     yield k, l
                     k = j
+
             i += 1
             j += 1
 
@@ -204,7 +209,9 @@ class BatchCountPruning:
                     # |e|, |Pe[i. . .j]|, t
                     tighter_Te = tighter_bound_func(bound_args[0], j-i+1, bound_args[1])
 
-                except Exception:
+                except Exception as e:
+                    logger.info(e)
+
                     # tighter bound is not supported for edit distance and similarity -- uses Te
                     tighter_Te = Te
 
@@ -346,6 +353,7 @@ class BatchCountPruning:
         pi, pj = Pe[i-1], Pe[j-1]
 
         if (pj - pi + 1) > Te:
+            # TODO: Recursion Error
             i = cls.binary_shift(i, j, Pe, Te, Tl)
 
         return i
@@ -385,6 +393,7 @@ class BatchCountPruning:
                     upper = mid - 1
                 else:
                     lower = mid + 1
+
             # this is heuristic based, if mid exceeds the length, we decrement it;
             # without this condition we miss many candidate windows e.g. 'surauijt ch'
             # in Table 1 document for entity 'surajit ch' 
