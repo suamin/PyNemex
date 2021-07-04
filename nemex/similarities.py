@@ -768,7 +768,8 @@ class Verify:
 
     @classmethod
     def check(cls, r: Union[list, str], s: Union[list, str], method: str, t: float) -> Tuple[bool, float]:
-        """TODO: Documentation
+        """Verifies whether the candidates from the unified framework (i.e. overlap similarity)
+        are valid candidates (i.e. based on their true similarity).
 
         Parameters
         ----------

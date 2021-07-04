@@ -1,7 +1,9 @@
+"""
+Pruning
+"""
+
 import math
 import logging
-
-from typing import List
 
 
 logger = logging.getLogger(__name__)
@@ -10,12 +12,12 @@ logger = logging.getLogger(__name__)
 class NoPruning:
     """No Pruning class.
 
-    TODO: Documentation
+    Does not perform any pruning.
 
     """
 
     @classmethod
-    def filter(cls, Pe: List[int], Le: int, Te: int, *args):
+    def filter(cls, Pe: list, Le: int, Te: int, *args):
         """Does not perform any pruning.
 
         Parameters
@@ -27,10 +29,11 @@ class NoPruning:
         Te : int
             Upper bound of |s| = |G(s)| (number of s's q-grams).
         args :
+            More arguments.
 
         Yields
         -------
-        Start and end position of invalid (removable) window.
+        Count spans: start (i) and end (j) indexes in position list (Pe).
 
         """
 
@@ -42,17 +45,19 @@ class NoPruning:
 
 
 class LazyCountPruning:
-    """Lazy Count class.
+    """Lazy-Count Pruning class.
 
-    TODO: Documentation
+    Performs Lazy-Count Pruning:
+     - Condition: |Pe| < Tl <= T (Lemma 3)
 
     """
 
     @classmethod
-    def filter(cls, Pe: List[int], Le: int, Te: int, Tl: int, *args):
+    def filter(cls, Pe: list, Le: int, Te: int, Tl: int, *args):
         """Searches invalid windows using Lazy-Count Pruning.
-        1. Count e's occurrence number (i.e. len(Pe))
-        2. If occurrence number < Tl, then the entity is pruned
+
+        1. Count e's occurrence number (len(Pe)).
+        2. If occurrence number < Tl, then the entity is pruned.
 
         Parameters
         ----------
@@ -65,6 +70,7 @@ class LazyCountPruning:
         Tl : int
             Lower bound of shared tokens between e and s (lazy-count bound).
         args:
+            More arguments.
 
         Yields
         -------
@@ -72,21 +78,26 @@ class LazyCountPruning:
 
         """
 
-        # lazy-count pruning: |Pe| <= Tl < T (Lemma 3)
         if len(Pe) >= Tl:
             yield from NoPruning.filter(Pe, Le, Te)
 
 
 class BucketCountPruning:
-    """Bucket Count Pruning class.
+    """Bucket-Count Pruning class.
 
-    TODO: Documentation
+    Performs Bucket-Count Pruning:
+     - 1. Perform Lazy-Count Pruning
+     - 2.
 
     """
 
     @classmethod
-    def filter(cls, Pe: List[int], Le: int, Te: int, Tl: int, tighter_bound_func, *bound_args):
-        """Searches invalid windows using Bucket-Count Pruning.
+    def filter(cls, Pe: list, Le: int, Te: int, Tl: int, tighter_bound_func, *bound_args):
+        """Searches count spans using Bucket Count Pruning.
+
+        TODO: No partitioning? --> size(bucket) < Tl, then prune elements in bucket
+        TODO: Check condition? --> (j - i + 1 >= Tl)
+        TODO:
 
         Parameters
         ----------
@@ -99,41 +110,55 @@ class BucketCountPruning:
         Tl  : int
             Lower bound of shared tokens between e and s (lazy-count bound)
         tighter_bound_func :
-            Tighter bound for edit distance and edit similarity.
+            Tighter bound function for edit distance and edit similarity.
         bound_args :
-            Tighter bound arguments.
+            Tighter bound function arguments.
 
         Yields
         -------
-        Start and end position of invalid (removable) window.
+        Start (i) and end (j) indexes of sublists of Pe.
 
         """
 
-        # lazy-count pruning: |Pe| <= Tl < T (Lemma 3)
+        # lazy-count pruning: |Pe| < Tl <= T (Lemma 3)
+        # TODO: why condition for 'No Pruning' ?
         if len(Pe) >= Tl:
 
             try:
                 Te_diff_Tl = tighter_bound_func(*bound_args)
 
             # tighter bound is not supported for jaccard, cosine and dice -- uses Te - Tl
-            except Exception as e:
-                logger.info(e)
+            except Exception:
                 Te_diff_Tl = Te - Tl
 
+            #
             for i, j in cls.iter_bucket_spans(Pe, Te_diff_Tl):
+
+                # Perform lazy count pruning
+                # TODO: Reuse existing class: LazyCountPruning.filter(Pe[i:j], Le, Te, Tl)
                 if j - i + 1 >= Tl:
                     yield i, j
 
     @classmethod
-    def iter_bucket_spans(cls, Pe: List[int], t: int):
-        """Iterate over bucket windows.
+    def iter_bucket_spans(cls, Pe: list, t: int):
+        """Iterate over position list (Pe).
+
+        1. Loop over position list (Pe)
+            a. Get neighbour positions pi, pj
+            b.
+            c. Move to next neighbours
+
+        If p_(i+1) - p_i - 1 > t, create new partition.
+        Threshold t may vary for different similarity functions.
+
+        TODO: Check condition? --> (pj - pi + 1 > t) --> (pj - pi - 1 > t)
 
         Parameters
         ----------
         Pe : list
             Sorted position list.
         t : int
-            Threshold.
+            Threshold for partitioning.
 
         Yields
         -------
@@ -141,41 +166,58 @@ class BucketCountPruning:
 
         """
 
-        # initialize window indexes
+        # neighbour indexes
         i, j = 1, 2
 
-        # initialize bucket with starting position
+        # bucket indexes (Pe[k;l])
         k = i
+        l = i
 
         while True:
+
             try:
+                # get elements
                 pi, pj = Pe[i-1], Pe[j-1]
 
-            except IndexError as e:
-                logger.info(e)
+            # check for end of position list
+            except IndexError:
+
+                # last position
                 l = i
+
+                # return bucket indexes
                 yield k, l
+
+                # end
                 break
 
             else:
+                # TODO: Check paper for correct formulae
+                # condition for new bucket
                 if pj - pi + 1 > t:
+
+                    # last position
                     l = i
                     yield k, l
+
+                    # create new bucket
                     k = j
 
+            # move span by 1
             i += 1
             j += 1
 
 
 class BatchCountPruning:
-    """Batch Count Pruning class.
+    """Batch-Count Pruning class.
 
-    TODO: Documentation
+    Performs Batch-Count pruning:
+     - Condition:
 
     """
 
     @classmethod
-    def filter(cls, Pe: List[int], Le: int, Te: int, Tl: int, tighter_bound_func, *bound_args):
+    def filter(cls, Pe: list, Le: int, Te: int, Tl: int, tighter_bound_func, *bound_args):
         """Searches invalid window using Batch-Count Pruning.
 
         Parameters
@@ -189,9 +231,9 @@ class BatchCountPruning:
         Tl : int
             Lower bound of shared tokens between e and s (lazy-count bound).
         tighter_bound_func :
-            Tighter bound for edit distance and edit similarity.
+            Tighter bound function for edit distance and edit similarity.
         bound_args :
-            Tighter bound arguments.
+            Tighter bound function arguments.
 
         Returns
         -------
@@ -222,7 +264,7 @@ class BatchCountPruning:
                     yield i, j
 
     @classmethod
-    def check_possible_candidate_window(cls, i: int, j: int, Pe: List[int], Le: int, Te: int, Tl: int,
+    def check_possible_candidate_window(cls, i: int, j: int, Pe: list, Le: int, Te: int, Tl: int,
                                         tighter_Te: int = None) -> bool:
         """Checks whether a window is a ``possible candidate window''.
 
@@ -261,14 +303,14 @@ class BatchCountPruning:
             if tighter_Te is None:
                 tighter_Te = Te
 
-            # candid window: make sure we have a candidate window (cf. Definition 3, condition 2)
+            # candidate window: make sure we have a candidate window (cf. Definition 3, condition 2)
             if Le <= pj - pi + 1 <= tighter_Te:
                 return True
 
         return False
 
     @classmethod
-    def iter_possible_candidate_windows(cls, Pe: List[int], Te: int, Tl: int):
+    def iter_possible_candidate_windows(cls, Pe: list, Te: int, Tl: int):
         """TODO: Documentation
 
         Parameters
@@ -309,7 +351,7 @@ class BatchCountPruning:
                 i = cls.binary_shift(i, j, Pe, Te, Tl)
 
     @classmethod
-    def binary_shift(cls, i: int, j: int, Pe: List[int], Te: int, Tl: int):
+    def binary_shift(cls, i: int, j: int, Pe: list, Te: int, Tl: int):
         """Performs binary shift on position list Pe.
 
         Parameters
@@ -359,7 +401,7 @@ class BatchCountPruning:
         return i
 
     @classmethod
-    def binary_span(cls, i: int, j: int, Pe: List[int], Te: int):
+    def binary_span(cls, i: int, j: int, Pe: list, Te: int):
         """Performs binary span on position list Pe.
 
         Parameters
@@ -375,6 +417,7 @@ class BatchCountPruning:
 
         Returns
         -------
+        TODO: Documentation
 
         """
 

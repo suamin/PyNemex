@@ -10,3 +10,7 @@ class TestLazyCount(unittest.TestCase):
 
     def tearDown(self) -> None:
         return None
+
+
+if __name__ == '__main__':
+    unittest.main()

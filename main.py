@@ -6,46 +6,57 @@ from nemex.nemex import Verify
 
 class Main:
     """Main class.
+    TODO: See Nemex.
 
     """
 
     def __init__(self,
                  doc: str,
-                 entity_dict: list,
-                 q_size: int = 2,
+                 edict: list,
+                 tok_thresh: int = 2,
                  sim_thresh: int = 2,
                  char: bool = True,
                  unique: bool = False,
-                 pruner: str = Pruner.BATCH_COUNT,
-                 similarity: str = "edit_dist",
+                 pruner: str = Pruner.BUCKET_COUNT,
+                 similarity: str = Sim.EDIT_DIST,
                  verified_only: bool = True,
                  special_char: str = "_"):
 
         # document
-        self.D = doc
+        self.doc: str = doc
 
         # entity dictionary
-        self.E = entity_dict
+        self.edict: list = edict
 
         # ???
-        self.verified_only = verified_only
+        self.verified_only: bool = verified_only
 
         '''
         tokenizer settings (see nemex.utils.Tokenizer)
         '''
         self.tokenizer = None
-        self.q = q_size
-        self.special_char = special_char
-        self.char = char
-        self.unique = unique
+        self.q: int = tok_thresh
+        self.special_char: str = special_char
+        self.char: bool = char
+        self.unique: bool = unique
 
         '''
         faerie settings (see nemex.faerie.Faerie)
         '''
         self.faerie = None
-        self.t = sim_thresh
-        self.pruner = pruner
-        self.similarity = similarity
+        self.t: float = sim_thresh
+        self.pruner: str = pruner
+        self.similarity: str = similarity
+
+        '''
+        intermediate results
+        '''
+        # proper entity dict
+        self.entities_dict = None
+        # document tokens
+        self.doc_tokens: list = []
+        # found candidates
+        self.candidates: collections.defaultdict = collections.defaultdict(set)
 
         return
 
@@ -58,17 +69,17 @@ class Main:
         self.setupTokenizer()
 
         # create entity dictionary
-        entities_dict = self.createEntityDict()
+        self.entities_dict = self.createEntityDict()
 
         # setup faerie model
-        self.createModel(entities_dict)
+        self.createModel(self.entities_dict)
 
         # tokenize document
-        doc_tokens = self.createDocumentTokens()
+        self.doc_tokens = self.createDocumentTokens()
 
         # check and verify
-        candidates = self.findCandidates(doc_tokens)
-        self.verifyCandidates(candidates, entities_dict)
+        self.candidates = self.findCandidates(self.doc_tokens)
+        self.verifyCandidates(self.candidates, self.entities_dict)
 
         return
 
@@ -91,7 +102,7 @@ class Main:
 
         """
 
-        return EntitiesDictionary.from_list(self.E, self.tokenizer)
+        return EntitiesDictionary.from_list(self.edict, self.tokenizer)
 
     def createModel(self, entities_dict: EntitiesDictionary):
         """Create model.
@@ -114,10 +125,9 @@ class Main:
 
         """
 
-        doc_tokens = self.tokenizer(self.D)
-        return doc_tokens
+        return self.tokenizer(self.doc)
 
-    def findCandidates(self, doc_tokens: list):
+    def findCandidates(self, doc_tokens: list) -> dict:
         """Find candidates.
 
         Parameters
@@ -135,18 +145,19 @@ class Main:
         entity2candidates = collections.defaultdict(set)
 
         # run faerie on tokens
+        # perform pruning on doc tokens and return candidates.
         for e, (i, j) in self.faerie(doc_tokens):
 
-            #
+            # get substring
             substring = doc_tokens[i:j + 1]
 
-            #
+            # char or token based
             if self.char:
                 substring = qgrams_to_char(substring)
             else:
                 substring = " ".join(substring)
 
-            #
+            # add substring to list of candidates
             entity2candidates[e].add(substring)
 
         return entity2candidates
@@ -198,17 +209,17 @@ class Main:
 
                 #
                 print("[{}] {} -- t_true={} {} {}=t_bounded".format(
-                    valid, candidate, score, "<=" if self.similarity == "edit_dist" else ">=", self.t))
+                    valid, candidate, score, "<=" if self.similarity == Sim.EDIT_DIST else ">=", self.t))
 
         return
 
 
 if __name__ == '__main__':
 
-    D = "an efficient filter for approximate membership checking. venkaee shga kamunshik kabarati, " \
+    docx = "an efficient filter for approximate membership checking. venkaee shga kamunshik kabarati, " \
              "dong xin, surauijt chadhurisigmod."
 
-    E = [
+    edictx = [
         "kaushik ch",
         "chakrabarti",
         "chaudhuri",
@@ -216,5 +227,6 @@ if __name__ == '__main__':
         "surajit ch"
     ]
 
-    main = Main(doc=D, entity_dict=E)
+    # run with default settings
+    main = Main(doc=docx, edict=edictx)
     main.run()

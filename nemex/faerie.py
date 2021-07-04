@@ -193,7 +193,7 @@ class Faerie(FaerieDataStructure, Similarity):
         
         Parameters
         ----------
-        Pe : list of int
+        Pe : List[int]
             Position list of entity.
 
         Le : int
@@ -202,8 +202,8 @@ class Faerie(FaerieDataStructure, Similarity):
         Te : int
             Upper bound on length of valid substring.
 
-        count_spans : list of tuple of [int, int]
-            List of start (i) and end (j) indexes into position list.
+        count_spans : List[Tuple[int, int]]
+            List of start (i) and end (j) indexes in position list.
             Each element of these sub-lists (Pe_ij) will be used to
             count entity's occurrence in sub-strings.
 
@@ -217,7 +217,7 @@ class Faerie(FaerieDataStructure, Similarity):
         
         Yields
         ------
-        Tuple of candidate start and end indexes into position list.
+        Tuple of candidate start and end indexes in position list.
         
         Notes
         -----
@@ -238,7 +238,7 @@ class Faerie(FaerieDataStructure, Similarity):
         for i, j in count_spans:
             # positions that should be counted
             count_positions.update(Pe[i-1:j])
-             
+
             pi, pj = Pe[i-1], Pe[j-1]
             Pe_ij = Pe[i-1:j]
             
@@ -287,10 +287,8 @@ class Faerie(FaerieDataStructure, Similarity):
         ----------
         candidate_start : int
             TODO: Documentation
-
         candidate_len : int
             TODO: Documentation
-
         entity_len : int
             TODO: Documentation
 
@@ -308,10 +306,7 @@ class Faerie(FaerieDataStructure, Similarity):
 
         count_overlap = self.V[candidate_start][candidate_len]
         
-        if count_overlap >= T:
-            return True
-        
-        return False
+        return count_overlap >= T
     
     def __call__(self, doc_tokens):
         """Main Faerie algorithm (cf. Algorithm 2. in [1]_).
@@ -320,10 +315,14 @@ class Faerie(FaerieDataStructure, Similarity):
         --------
         :meth:`~nemex.data.FaerieDataStructure.step`
             A convenience method around single Faerie update.
+
+        Yields
+        -------
+        Minimal entity with its start and end position.
         
         """
 
-        # get inverted lists
+        # get inverted lists of doc tokens
         inv_lists = self.inv_index[doc_tokens]
         
         # if we don't match any token of document to any of entities'
@@ -338,7 +337,7 @@ class Faerie(FaerieDataStructure, Similarity):
         e = self.heap[0]
         Pe = list()
 
-        # counter for number of iterations (should be equal to sum(lenght of inv. lists))
+        # counter for number of iterations (should be equal to sum(length of inv. lists))
         i = 0
 
         # the sequence of elements popped from heap (should be ascending and 
@@ -346,25 +345,33 @@ class Faerie(FaerieDataStructure, Similarity):
         pop_sequence = list()
         
         while True:
-            # take faerie step
-            # we use ``stop`` as flag to break the loop because
-            # while len(self.heap) > 0 does not process last entity
+            '''
+            take faerie step
+            we use ``stop`` as flag to break the loop because
+            while len(self.heap) > 0 does not process last entity
+            '''
             ei, pi, stop = self.step(e)
             
             pop_sequence.append(ei)
             
-            # while we have same entity, we keep popping it to build position list
-            # cf. pg 535 first column, first paragraph on Complexity
+            '''
+            while we have same entity, we keep popping it to build position list
+            cf. pg 535 first column, first paragraph on Complexity
+            '''
             if ei == e:
                 Pe.append(pi)
+
             # else we see a new entity
             else:
+
                 # this should be equal to pre-computed list
                 assert Pe == self.ent2positions[e], \
                     "Invalid position list, expected `{}` but collected `{}`".format(self.ent2positions[e], Pe)
                 
-                # get entity specific attributes
-                # note: len of entity is also pre-computed
+                '''
+                get entity specific attributes
+                note: len of entity is also pre-computed
+                '''
                 entity = self.entities_dict[e]
                 entity_len = len(entity)
                 Le, Te, Tl = entity.Le, entity.Te, entity.Tl
@@ -374,11 +381,11 @@ class Faerie(FaerieDataStructure, Similarity):
                 # first common args
                 pruner_args = (Pe, Le, Te, Tl,)
                 
-                # "batch_count" has tighter upper bounds on window size for jaccard, 
+                # "batch_count" has tighter upper bounds on window size for jaccard,
                 # dice and cosine which needs to be taken care of (cf. last lines pg. 534)
                 if self.prune_method == Pruner.BATCH_COUNT:
                     pruner_args = pruner_args + (self.tighter_upper_window_size, entity_len, self.t)
-                
+
                 # "bucket_count" has tighter neighbor difference bounds for edit distance
                 # and similarity which needs to be taken care of (cf. pg. 534 first column 5th para)
                 elif self.prune_method == Pruner.BUCKET_COUNT:

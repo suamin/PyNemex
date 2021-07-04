@@ -161,16 +161,21 @@ class EntitiesDictionary:
 
         # each line is tab separated id and string value
         with open(filename, encoding='utf-8', errors='ignore') as rf:
+
             for line in rf:
                 line = line.strip()
+
                 if not line:
                     continue
+
                 line = line.split("\t")
+
                 if len(line) == 1:
                     uid = None
                     string = line[0]
                 else:
                     uid, string = line
+
                 entity_dict.add(string, uid)
 
         return entity_dict
@@ -352,6 +357,7 @@ class InvertedIndex:
 
         # for each entity in dictionary
         for eidx, entity in entities_dict.idx2ent.items():
+
             # for each token / q-gram of entity
             for token in entity.tokens:
                 token2entities[token].append(eidx)
@@ -374,7 +380,9 @@ class InvertedIndex:
 
         # order preserving mapping
         inv_lists = collections.OrderedDict()
+
         for position, token in enumerate(tokens):
+
             if token in self.token2entities:
                 inv_lists[position] = self.token2entities[token]
 
@@ -493,7 +501,7 @@ class FaerieDataStructure:
 
         Parameters
         ----------
-        inv_lists : InvertedIndex
+        inv_lists : data.InvertedIndex
             Inverted Index lists.
 
         """
@@ -520,6 +528,7 @@ class FaerieDataStructure:
         # since we used ``OrderedDict`` in :meth:`~nemex.data.InvertedIndex.__getitem__`, 
         # looping over it will return keys in ascending order
         for position in inv_lists:
+
             # since we used enumeration in :meth:`~nemex.data.InvertedIndex.__getitem__`, 
             # looping over each sublist will return token positions in ascending order
             for eidx in inv_lists[position]:
@@ -571,12 +580,14 @@ class FaerieDataStructure:
         """
 
         for cl in range(min_len, max_len + 1):
+
             # relevant entries for this increment starts from ``start_idx`` 
             # and goes up to ``position``; less than 0 case: when looking 
             # back from current index is larger than number of elements before 
             # that position, so we clamp at 0
             start_idx = max(0, position - cl + 1)
             end_idx = position
+
             for j in range(start_idx, end_idx + 1):
                 # j = the right position in document index, marking as end of substring
                 # l = length to consider before position j 

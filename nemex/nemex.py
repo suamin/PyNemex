@@ -20,7 +20,7 @@ class Nemex:
     list_or_file_entities : {list, str}
         List or file with entities.
     char : bool
-        If true, performs character-level similarity instead of token-level.
+        If true, performs character-based similarity instead of token-based.
     q : int
         Size of q-grams.
     special_char : str
@@ -77,7 +77,7 @@ class Nemex:
         logger.info("Building entities dictionary ...")
         T = time.time()
 
-        # check input
+        # create entity dictionary
         if isinstance(list_or_file_entities, list):
             self.E = EntitiesDictionary.from_list(list_or_file_entities, self.tokenizer.tokenize)
         elif isinstance(list_or_file_entities, str):
@@ -88,7 +88,7 @@ class Nemex:
             logger.error("Expected `list` or `str`, but got ", type(list_or_file_entities))
             exit(0)
 
-        # cache
+        # caching
         self.cache_ent_repr = dict()
 
         # log end
@@ -109,7 +109,7 @@ class Nemex:
         document : str
             Text document.
         valid_only : bool
-            If true, use only valid substrings.
+            If true, return only as valid verified substrings.
 
         Returns
         -------
@@ -117,15 +117,17 @@ class Nemex:
 
         """
 
-        # doc type
+        # check doc type
         assert isinstance(document, str), "Expected a string as document."
 
         # tokenize
         doc_tokens = self.tokenizer.tokenize(document)
 
-        # char-level
+        # char-based
         if self.char:
             doc_tokens_str = qgrams_to_char(doc_tokens).replace(self.tokenizer.special_char, " ")
+
+        # token-based
         else:
             doc_tokens_str = " ".join(doc_tokens)
 
@@ -139,11 +141,13 @@ class Nemex:
         for e, (i, j) in self.faerie(doc_tokens):
             match_tokens = doc_tokens[i:j+1]
             match_span = spans[i:j+1]
+
             if len(match_span) == 1:
                 start, end = match_span[0]
             else:
                 start, end = match_span[0][0], match_span[-1][1]
-            
+
+            # char-based
             if self.char:
                 q = self.tokenizer.q
                 start, end = start - (i * q), end - (j * q)
@@ -163,12 +167,17 @@ class Nemex:
                     "valid": None
                 })
 
+                # verify
                 if self.verify:
                     valid, score = Verify.check(match, entity, self.faerie.similarity, self.faerie.t)
                     output["matches"][-1]["score"] = score
                     output["matches"][-1]["valid"] = valid
+
+                    # return only valid matches
                     if valid_only and not valid:
                         del output["matches"][-1]
+
+            # token-based
             else:
                 # end = spans[j][-1]
                 match = doc_tokens_str[start:end]
@@ -187,12 +196,15 @@ class Nemex:
                     "valid": None
                 })
 
+                # verify
                 if self.verify:
                     valid, score = Verify.check(
                         match_tokens, self.E[e].tokens, self.faerie.similarity, self.faerie.t
                     )
                     output["matches"][-1]["score"] = score
                     output["matches"][-1]["valid"] = valid
+
+                    # return only valid matches
                     if valid_only and not valid:
                         del output["matches"][-1]
         
