@@ -1,11 +1,13 @@
 import unittest
 
 
-class TestLazyCount(unittest.TestCase):
+class Test_ABC(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.doc = "Lorem ipsum."
         return None
+
+    def test_example(self):
+        return self.assertEqual("", "")
 
     def tearDown(self) -> None:
         return None

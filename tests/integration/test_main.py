@@ -40,8 +40,7 @@ class TestMain(unittest.TestCase):
 
         """
 
-        main = Main(doc=self.D, entity_dict=self.E)
-        main.run()
+
 
         return
 

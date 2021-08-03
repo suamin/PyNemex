@@ -1,4 +1,5 @@
 from nemex.data import EntitiesDictionary
+from nemex.defaults import Default
 from nemex.faerie import Faerie
 from nemex.utils import *
 from nemex.nemex import Verify
@@ -11,22 +12,22 @@ class Main:
     """
 
     def __init__(self,
-                 doc: str,
-                 edict: list,
-                 tok_thresh: int = 2,
-                 sim_thresh: int = 2,
-                 char: bool = True,
-                 unique: bool = False,
-                 pruner: str = Pruner.BUCKET_COUNT,
-                 similarity: str = Sim.EDIT_DIST,
-                 verified_only: bool = True,
-                 special_char: str = "_"):
+                 document: str,
+                 entities: list,
+                 tok_thresh: int = Default.TOKEN_THRESH,
+                 sim_thresh: int = Default.SIM_THRESH,
+                 char: bool = Default.CHAR,
+                 unique: bool = Default.UNIQUE,
+                 pruner: str = Default.PRUNER,
+                 similarity: str = Default.SIMILARITY,
+                 verified_only: bool = Default.VERIFIED,
+                 special_char: str = Default.SPECIAL_CHAR):
 
         # document
-        self.doc: str = doc
+        self.doc: str = document
 
         # entity dictionary
-        self.edict: list = edict
+        self.entities: list = entities
 
         # ???
         self.verified_only: bool = verified_only
@@ -72,7 +73,7 @@ class Main:
         self.entities_dict = self.createEntityDict()
 
         # setup faerie model
-        self.createModel(self.entities_dict)
+        self.faerie = self.createModel(self.entities_dict)
 
         # tokenize document
         self.doc_tokens = self.createDocumentTokens()
@@ -102,7 +103,7 @@ class Main:
 
         """
 
-        return EntitiesDictionary.from_list(self.edict, self.tokenizer)
+        return EntitiesDictionary.from_list(self.entities, self.tokenizer)
 
     def createModel(self, entities_dict: EntitiesDictionary):
         """Create model.
@@ -113,8 +114,7 @@ class Main:
 
         """
 
-        self.faerie = Faerie(entities_dict, self.similarity, self.t, self.q, self.pruner)
-        return
+        return Faerie(entities_dict, self.similarity, self.t, self.q, self.pruner)
 
     def createDocumentTokens(self) -> list:
         """Tokenize document.
@@ -216,10 +216,10 @@ class Main:
 
 if __name__ == '__main__':
 
-    docx = "an efficient filter for approximate membership checking. venkaee shga kamunshik kabarati, " \
+    document = "an efficient filter for approximate membership checking. venkaee shga kamunshik kabarati, " \
              "dong xin, surauijt chadhurisigmod."
 
-    edictx = [
+    entities = [
         "kaushik ch",
         "chakrabarti",
         "chaudhuri",
@@ -228,5 +228,5 @@ if __name__ == '__main__':
     ]
 
     # run with default settings
-    main = Main(doc=docx, edict=edictx)
+    main = Main(document=document, entities=entities)
     main.run()

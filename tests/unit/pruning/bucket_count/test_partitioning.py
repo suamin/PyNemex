@@ -28,9 +28,6 @@ class TestPartitioning(unittest.TestCase):
 
         self.sim.similarity = sim
         self.T = self.sim.tighter_neighbor_bound(*self.bound_args)
-        print("------------")
-        print(self.T)
-        print("------------")
         return
 
     '''EDIT DISTANCE'''

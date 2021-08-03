@@ -131,11 +131,11 @@ class BucketCountPruning:
             except Exception:
                 Te_diff_Tl = Te - Tl
 
-            #
+            # partitioning
             for i, j in cls.iter_bucket_spans(Pe, Te_diff_Tl):
 
-                # Perform lazy count pruning
-                # TODO: Reuse existing class: LazyCountPruning.filter(Pe[i:j], Le, Te, Tl)
+                # Check length of bucket
+                # TODO: Reuse existing class: yield from LazyCountPruning.filter(Pe[i:j], Le, Te, Tl)
                 if j - i + 1 >= Tl:
                     yield i, j
 
