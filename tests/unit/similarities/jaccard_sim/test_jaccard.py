@@ -1,7 +1,9 @@
 import unittest
 
+from nemex.similarities import JaccardSimilarity
 
-class Test_ABC(unittest.TestCase):
+
+class TestJaccardSimilarity(unittest.TestCase):
 
     def setUp(self) -> None:
         return None

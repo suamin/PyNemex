@@ -1,7 +1,9 @@
 import unittest
 
+from nemex import FaerieDataStructure
 
-class Test_ABC(unittest.TestCase):
+
+class TestFaerieDataStructure(unittest.TestCase):
 
     def setUp(self) -> None:
         return None

@@ -1,7 +1,6 @@
 import unittest
 
-from nemex.nemex import Nemex
-from nemex.utils import Pruner, Sim
+from nemex import Nemex, Pruner, Sim
 
 
 class TestBatchCount(unittest.TestCase):

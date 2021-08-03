@@ -1,5 +1,6 @@
 import unittest
-from nemex.utils import Tokenizer
+
+from nemex import Tokenizer
 
 
 class TestTokenizer(unittest.TestCase):

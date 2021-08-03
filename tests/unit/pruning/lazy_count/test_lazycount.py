@@ -1,5 +1,7 @@
 import unittest
 
+from nemex import LazyCountPruning
+
 
 class TestLazyCount(unittest.TestCase):
 

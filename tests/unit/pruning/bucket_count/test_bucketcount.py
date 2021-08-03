@@ -1,8 +1,6 @@
 import unittest
 
-from nemex import Faerie, Pruner, BucketCountPruning
-from nemex.data import Entity, EntitiesDictionary
-from nemex.defaults import Default
+from nemex import Faerie, Pruner, BucketCountPruning, EntitiesDictionary, Default
 
 
 class TestBucketCount(unittest.TestCase):

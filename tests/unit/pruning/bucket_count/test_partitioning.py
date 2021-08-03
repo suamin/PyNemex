@@ -1,9 +1,6 @@
-import logging
 import unittest
 
-from nemex import Sim
-from nemex.pruning import BucketCountPruning
-from nemex.similarities import Similarity
+from nemex import Sim, BucketCountPruning, Similarity
 
 
 class TestPartitioning(unittest.TestCase):

@@ -1,7 +1,9 @@
 import unittest
 
+from nemex.similarities import DiceSimilarity
 
-class Test_ABC(unittest.TestCase):
+
+class TestDiceSimilarity(unittest.TestCase):
 
     def setUp(self) -> None:
         return None

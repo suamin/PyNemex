@@ -1,7 +1,9 @@
 import unittest
 
+from nemex.similarities import EditDistance
 
-class Test_ABC(unittest.TestCase):
+
+class TestEditDistance(unittest.TestCase):
 
     def setUp(self) -> None:
         return None

@@ -12,6 +12,7 @@ from .pruning import (
 
 from .utils import Tokenizer, Pruner, Sim
 from .similarities import Similarity, Verify
+from .defaults import Default
 
 from .faerie import Faerie
 from .nemex import Nemex

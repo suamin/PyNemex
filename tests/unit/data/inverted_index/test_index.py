@@ -1,7 +1,9 @@
 import unittest
 
+from nemex import InvertedIndex
 
-class Test_ABC(unittest.TestCase):
+
+class TestInvertedIndex(unittest.TestCase):
 
     def setUp(self) -> None:
         return None

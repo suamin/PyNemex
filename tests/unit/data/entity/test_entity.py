@@ -1,7 +1,9 @@
 import unittest
 
+from nemex import Entity
 
-class Test_ABC(unittest.TestCase):
+
+class TestEntity(unittest.TestCase):
 
     def setUp(self) -> None:
         return None

@@ -1,7 +1,6 @@
 import unittest
 
-from nemex import Nemex, Pruner
-from nemex.defaults import Default
+from nemex import Nemex, Pruner, Default
 
 
 class TestNemex(unittest.TestCase):
