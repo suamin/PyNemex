@@ -641,7 +641,7 @@ class Similarity:
         return self._sims[self.similarity].tighter_upper_window_size(*args)
     
     def tighter_neighbor_bound(self, *args):
-        if self.similarity not in Sim.CHAR_BASED:
+        if self.similarity not in Sim.TOKEN_BASED:
             raise AttributeError("Tighter neighbor bound is not supported with {}".format(self.similarity))
         return self._sims[self.similarity].tighter_neighbor_bound(*args)
 
