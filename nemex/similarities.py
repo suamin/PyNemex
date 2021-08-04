@@ -15,8 +15,9 @@ class JaccardSimilarity:
     @staticmethod
     def find_tau_min_overlap(entity_len: int, string_len: int, delta: float) -> float:
         """Computes the overlap similarity threshold T.
+        (cf. page 530, right column)
 
-        |e ∩ s| >= (|e| + |s|) * δ/(1 + δ)
+        T = ⌈ (|e| + |s|) * δ/(1 + δ) ⌉ <= |e ∩ s|
 
         Parameters
         ----------
@@ -36,52 +37,55 @@ class JaccardSimilarity:
         return math.ceil((entity_len + string_len) * (delta / (1 + delta)))
 
     @staticmethod
-    def find_min_size(tokens_len: int, tau: int) -> float:
+    def find_min_size(tokens_len: int, delta: float) -> float:
         """Computes the lower bound ⊥e.
+        (cf. page 531, left column)
 
-        |X| * τ
+        ⊥e = ⌈ |X| * δ ⌉ <= |s|
 
         Parameters
         ----------
         tokens_len : int
             Number of tokens.
-        tau : int
-            Edit distance threshold.
+        delta : float
+            Similarity threshold.
 
         Returns
         -------
-        Lower bound ⊥e.
+        Lower bound ⊥e for number of tokens.
 
         """
 
-        return math.ceil(tokens_len * tau)
+        return math.ceil(tokens_len * delta)
 
     @staticmethod
-    def find_max_size(tokens_len: int, tau: int) -> float:
-        """Computes the upper bound Te.
+    def find_max_size(tokens_len: int, delta: float) -> float:
+        """Computes the upper bound ⊤e.
+        (cf. page 531, left column)
 
-        |X| / τ
+        ⊤e = ⌊ |X| / δ ⌋ >= |s|
 
         Parameters
         ----------
         tokens_len : int
             Number of tokens.
-        tau : int
+        delta : float
             Edit distance threshold.
 
         Returns
         -------
-        Upper bound Te.
+        Upper bound ⊤e for number of tokens.
 
         """
 
-        return math.floor(tokens_len / tau)
+        return math.floor(tokens_len / delta)
 
     @staticmethod
     def find_lower_bound_of_entity(entity_len: int, delta: float) -> float:
         """Computes lower overlap similarity threshold T, i.e., Tl.
+        (cf. page 533, right column)
 
-        |e| * δ
+        Tl = ⌈ |e| * δ ⌉
 
         Parameters
         ----------
@@ -101,8 +105,9 @@ class JaccardSimilarity:
     @staticmethod
     def tighter_upper_window_size(entity_len: int, Pe_ij_len: int, delta: float) -> float:
         """Computes a tighter upper window size for document D.
+        (cf. page 534, right column)
 
-        ⊥e <= |D[pi...pj]| <= min(|e|, |P_e[i...j]|) / δ
+        ⊥e <= |D[pi...pj]| <= min(|e|, |P_e[i...j]|) / δ = ⊤e
 
         Parameters
         ----------
@@ -115,7 +120,7 @@ class JaccardSimilarity:
 
         Returns
         -------
-        Tighter upper window size.
+        Tighter upper window size ⊤e.
 
         """
 
@@ -132,8 +137,9 @@ class CosineSimilarity:
     @staticmethod
     def find_tau_min_overlap(entity_len: int, string_len: int, delta: float) -> float:
         """Computes the overlap similarity threshold T.
+        (cf. page 530, right column)
 
-        |e ∩ s| >= (|e| * |s|) * δ
+        T = ⌈ (|e| * |s|)^(0.5) * δ ⌉ <= |e ∩ s|
 
         Parameters
         ----------
@@ -155,8 +161,9 @@ class CosineSimilarity:
     @staticmethod
     def find_min_size(tokens_len: int, delta: float) -> float:
         """Computes the lower bound ⊥e.
+        (cf. page 531, left column)
 
-        |X| * δ^2
+        ⊥e = ⌈ |X| * δ^2 ⌉
 
         Parameters
         ----------
@@ -167,7 +174,7 @@ class CosineSimilarity:
 
         Returns
         -------
-        Lower bound ⊥e.
+        Lower bound ⊥e for number of tokens.
 
         """
 
@@ -176,8 +183,9 @@ class CosineSimilarity:
     @staticmethod
     def find_max_size(tokens_len: int, delta: float) -> float:
         """Computes the upper bound Te.
+        (cf. page 531, left column)
 
-        |X| / δ^2
+        ⊤e = ⌊ |X| / δ^2 ⌋
 
         Parameters
         ----------
@@ -188,7 +196,7 @@ class CosineSimilarity:
 
         Returns
         -------
-        Upper bound Te.
+        Upper bound ⊤e for number of tokens.
 
         """
 
@@ -197,8 +205,9 @@ class CosineSimilarity:
     @staticmethod
     def find_lower_bound_of_entity(entity_len: int, delta: float) -> float:
         """Computes lower overlap similarity threshold T, i.e., Tl.
+        (cf. page 533, right column)
 
-        |e| * δ^2
+        Tl = ⌈ |e| * δ^2 ⌉
 
         Parameters
         ----------
@@ -218,6 +227,7 @@ class CosineSimilarity:
     @staticmethod
     def tighter_upper_window_size(entity_len: int, Pe_ij_len: int, delta: float) -> float:
         """Computes a tighter upper window size for document D.
+        (cf. page 534, right column)
 
         ⊥e <= |D[pi...pj]| <= min(|e|, |P_e[i...j]|) / (δ^2)
 
@@ -249,8 +259,9 @@ class DiceSimilarity:
     @staticmethod
     def find_tau_min_overlap(entity_len: int, string_len: int, delta: float) -> float:
         """Computes the overlap similarity threshold T.
+        (cf. page 530, right column)
 
-        |e ∩ s| >= (|e| + |s|) * (δ / 2)
+        T = ⌈ (|e| + |s|) * (δ / 2) ⌉ <= |e ∩ s|
 
         Parameters
         ----------
@@ -272,8 +283,9 @@ class DiceSimilarity:
     @staticmethod
     def find_min_size(tokens_len: int, delta: float) -> float:
         """Computes the lower bound ⊥e.
+        (cf. page 531, left column)
 
-        |X| * (δ / (2 - δ))
+        ⊥e = ⌈ |X| * (δ / (2 - δ)) ⌉
 
         Parameters
         ----------
@@ -284,7 +296,7 @@ class DiceSimilarity:
 
         Returns
         -------
-        Lower bound ⊥e.
+        Lower bound ⊥e for number of tokens.
 
         """
 
@@ -292,9 +304,10 @@ class DiceSimilarity:
     
     @staticmethod
     def find_max_size(tokens_len: int, delta: float) -> float:
-        """Computes the upper bound Te.
+        """Computes the upper bound ⊤e.
+        (cf. page 531, left column)
 
-        |X| * ((2 - δ) / δ)
+        ⊤e = ⌊ |X| * ((2 - δ) / δ) ⌋
 
         Parameters
         ----------
@@ -305,7 +318,7 @@ class DiceSimilarity:
 
         Returns
         -------
-        Upper bound Te.
+        Upper bound ⊤e for number of tokens.
 
         """
 
@@ -314,8 +327,9 @@ class DiceSimilarity:
     @staticmethod
     def find_lower_bound_of_entity(tokens_len: int, delta: float) -> float:
         """Computes lower overlap similarity threshold T, i.e., Tl.
+        (cf. page 533, right column)
 
-        |X| * (δ / (2 - δ))
+        Tl = ⌈ |X| * (δ / (2 - δ)) ⌉
 
         Parameters
         ----------
@@ -335,6 +349,7 @@ class DiceSimilarity:
     @staticmethod
     def tighter_upper_window_size(entity_len: int, Pe_ij_len: int, delta: float) -> float:
         """Computes a tighter upper window size for document D.
+        (cf. page 534, right column)
 
         ⊥e <= |D[pi...pj]| <= min(|e|, |P_e[i...j]|) * ((2 - δ) / δ)
 
@@ -366,8 +381,9 @@ class EditSimilarity:
     @staticmethod
     def find_tau_min_overlap(entity_len: int, string_len: int, delta: float, q: int) -> float:
         """Computes the overlap similarity threshold T.
+        (cf. page 530, right column)
 
-        |e ∩ s| >= max(|e|, |s|) - (max(|e|, |s|) + q - 1) * (1 - δ) * q
+        T = ⌈ max(|e|,|s|) - (max(|e|,|s|) + q - 1) * (1 - δ) * q ⌉ <= |e ∩ s|
 
         Parameters
         ----------
@@ -378,7 +394,7 @@ class EditSimilarity:
         delta : float
             Similarity threshold.
         q : int
-            Edit-distance threshold.
+            Token size.
 
         Returns
         -------
@@ -391,8 +407,9 @@ class EditSimilarity:
     @staticmethod
     def find_min_size(tokens_len: int, delta: float, q: int) -> float:
         """Computes the lower bound ⊥e.
+        (cf. page 531, left column)
 
-        ((|X| + q - 1) * δ) - (q - 1)
+        ⊥e = ⌈ ((|X| + q - 1) * δ) - (q - 1) ⌉
 
         Parameters
         ----------
@@ -405,7 +422,7 @@ class EditSimilarity:
 
         Returns
         -------
-        Lower bound ⊥e.
+        Lower bound ⊥e for number of tokens.
 
         """
 
@@ -413,9 +430,10 @@ class EditSimilarity:
     
     @staticmethod
     def find_max_size(tokens_len: int, delta: int, q: int) -> float:
-        """Computes the upper bound Te.
+        """Computes the upper bound ⊤e.
+        (cf. page 531, left column)
 
-        ((|X| + q - 1) / δ) - (q - 1)
+        ⊤e = ⌊ ((|X| + q - 1) / δ) - (q - 1) ⌋
 
         Parameters
         ----------
@@ -428,7 +446,7 @@ class EditSimilarity:
 
         Returns
         -------
-        Upper bound Te.
+        Upper bound ⊤e for number of tokens.
 
         """
 
@@ -437,8 +455,9 @@ class EditSimilarity:
     @staticmethod
     def find_lower_bound_of_entity(tokens_len: int, delta: float, q: int) -> float:
         """Computes lower overlap similarity threshold T, i.e., Tl.
+        (cf. page 533, right column)
 
-        |e| - ((|e| + q - 1) * ((1 - δ) / δ) * q)
+        Tl = ⌈ |e| - ((|e| + q - 1) * ((1 - δ) / δ) * q) ⌉
 
         Parameters
         ----------
@@ -461,10 +480,9 @@ class EditSimilarity:
     def tighter_neighbor_bound(entity_len: int, delta: float, q: int) -> float:
         """Computes the threshold for pruning neighbouring tokens.
         If below condition holds, neighbouring tokens pi+1 and pi are pruned.
-        (see nemex.pruning.BucketCountPruning)
+        (cf. page 534, left column)
 
-        pi+1 - pi - 1 > ((|e| + q - 1) / δ) * (1 - δ) * q
-        (cf. page 534, left column para 5)
+        pi+1 - pi - 1 > ⌊ ((|e| + q - 1) / δ) * (1 - δ) * q ⌋
 
         Parameters
         ----------
@@ -494,8 +512,9 @@ class EditDistance:
     @staticmethod
     def find_tau_min_overlap(entity_len: int, string_len: int, tau: int, q: int) -> int:
         """Computes the overlap similarity threshold T.
+        (cf. page 530, right column)
 
-        |e ∩ s| <= max(|e|, |s|) - (τ * q)
+        T = max(|e|, |s|) - (τ * q) <= |e ∩ s|
 
         Parameters
         ----------
@@ -519,8 +538,9 @@ class EditDistance:
     @staticmethod
     def find_min_size(tokens_len: int, tau: int) -> int:
         """Computes the lower bound ⊥e.
+        (cf. page 531, left column)
 
-        |X| - τ
+        ⊥e = |X| - τ
 
         Parameters
         ----------
@@ -531,7 +551,7 @@ class EditDistance:
 
         Returns
         -------
-        Lower bound ⊥e.
+        Lower bound ⊥e for number of tokens.
 
         """
 
@@ -539,9 +559,10 @@ class EditDistance:
 
     @staticmethod
     def find_max_size(tokens_len: int, tau: int) -> int:
-        """Computes the upper bound Te.
+        """Computes the upper bound ⊤e.
+        (cf. page 531, left column)
 
-        |X| + τ
+        ⊤e = |X| + τ
 
         Parameters
         ----------
@@ -552,7 +573,7 @@ class EditDistance:
 
         Returns
         -------
-        Upper bound Te.
+        Upper bound ⊤e for number of tokens.
 
         """
 
@@ -561,8 +582,9 @@ class EditDistance:
     @staticmethod
     def find_lower_bound_of_entity(tokens_len: int, tau: int, q: int) -> int:
         """Computes lower overlap similarity threshold T, i.e., Tl.
+        (cf. page 533, right column)
 
-        |X| - (τ * q)
+        Tl = |X| - (τ * q)
 
         Parameters
         ----------
@@ -585,10 +607,9 @@ class EditDistance:
     def tighter_neighbor_bound(tau: int, q: int) -> int:
         """Computes the threshold for pruning neighbouring tokens.
         If below condition holds, neighbouring tokens pi+1 and pi are pruned.
-        (see nemex.pruning.BucketCountPruning)
+        (cf. page 534, left column)
 
         pi+1 - pi - 1 > τ * q
-        (cf. page 534, left column para 5)
 
         Parameters
         ----------
