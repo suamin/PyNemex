@@ -37,16 +37,16 @@ class JaccardSimilarity:
         return math.ceil((entity_len + string_len) * (delta / (1 + delta)))
 
     @staticmethod
-    def find_min_size(tokens_len: int, delta: float) -> float:
+    def find_min_size(entity_len: int, delta: float) -> float:
         """Computes the lower bound ⊥e.
         (cf. page 531, left column)
 
-        ⊥e = ⌈ |X| * δ ⌉ <= |s|
+        ⊥e = ⌈ |e| * δ ⌉ <= |s|
 
         Parameters
         ----------
-        tokens_len : int
-            Number of tokens.
+        entity_len : int
+            Length of dictionary entity, i.e., number of tokens.
         delta : float
             Similarity threshold.
 
@@ -56,19 +56,19 @@ class JaccardSimilarity:
 
         """
 
-        return math.ceil(tokens_len * delta)
+        return math.ceil(entity_len * delta)
 
     @staticmethod
-    def find_max_size(tokens_len: int, delta: float) -> float:
+    def find_max_size(entity_len: int, delta: float) -> float:
         """Computes the upper bound ⊤e.
         (cf. page 531, left column)
 
-        ⊤e = ⌊ |X| / δ ⌋ >= |s|
+        ⊤e = ⌊ |e| / δ ⌋ >= |s|
 
         Parameters
         ----------
-        tokens_len : int
-            Number of tokens.
+        entity_len : int
+            Length of dictionary entity, i.e., number of tokens.
         delta : float
             Edit distance threshold.
 
@@ -78,7 +78,7 @@ class JaccardSimilarity:
 
         """
 
-        return math.floor(tokens_len / delta)
+        return math.floor(entity_len / delta)
 
     @staticmethod
     def find_lower_bound_of_entity(entity_len: int, delta: float) -> float:
@@ -159,16 +159,16 @@ class CosineSimilarity:
         return math.ceil(math.sqrt(entity_len * string_len) * delta)
     
     @staticmethod
-    def find_min_size(tokens_len: int, delta: float) -> float:
+    def find_min_size(entity_len: int, delta: float) -> float:
         """Computes the lower bound ⊥e.
         (cf. page 531, left column)
 
-        ⊥e = ⌈ |X| * δ^2 ⌉
+        ⊥e = ⌈ |e| * δ^2 ⌉
 
         Parameters
         ----------
-        tokens_len : int
-            Number of tokens.
+        entity_len : int
+            Length of dictionary entity, i.e., number of tokens.
         delta : float
             Similarity threshold.
 
@@ -178,19 +178,19 @@ class CosineSimilarity:
 
         """
 
-        return math.ceil(tokens_len * delta**2)
+        return math.ceil(entity_len * delta**2)
     
     @staticmethod
-    def find_max_size(tokens_len: int, delta: float) -> float:
+    def find_max_size(entity_len: int, delta: float) -> float:
         """Computes the upper bound Te.
         (cf. page 531, left column)
 
-        ⊤e = ⌊ |X| / δ^2 ⌋
+        ⊤e = ⌊ |e| / δ^2 ⌋
 
         Parameters
         ----------
-        tokens_len : int
-            Number of tokens.
+        entity_len : int
+            Length of dictionary entity, i.e., number of tokens.
         delta : float
             Similarity threshold.
 
@@ -200,7 +200,7 @@ class CosineSimilarity:
 
         """
 
-        return math.floor(tokens_len / delta**2)
+        return math.floor(entity_len / delta**2)
     
     @staticmethod
     def find_lower_bound_of_entity(entity_len: int, delta: float) -> float:
@@ -281,16 +281,16 @@ class DiceSimilarity:
         return math.ceil((entity_len + string_len) * (delta / 2))
     
     @staticmethod
-    def find_min_size(tokens_len: int, delta: float) -> float:
+    def find_min_size(entity_len: int, delta: float) -> float:
         """Computes the lower bound ⊥e.
         (cf. page 531, left column)
 
-        ⊥e = ⌈ |X| * (δ / (2 - δ)) ⌉
+        ⊥e = ⌈ |e| * (δ / (2 - δ)) ⌉
 
         Parameters
         ----------
-        tokens_len : int
-            Number of tokens.
+        entity_len : int
+            Length of dictionary entity, i.e., number of tokens.
         delta : float
             Similarity threshold.
 
@@ -300,19 +300,19 @@ class DiceSimilarity:
 
         """
 
-        return math.ceil(tokens_len * (delta / (2 - delta)))
+        return math.ceil(entity_len * (delta / (2 - delta)))
     
     @staticmethod
-    def find_max_size(tokens_len: int, delta: float) -> float:
+    def find_max_size(entity_len: int, delta: float) -> float:
         """Computes the upper bound ⊤e.
         (cf. page 531, left column)
 
-        ⊤e = ⌊ |X| * ((2 - δ) / δ) ⌋
+        ⊤e = ⌊ |e| * ((2 - δ) / δ) ⌋
 
         Parameters
         ----------
-        tokens_len : int
-            Number of tokens.
+        entity_len : int
+            Length of dictionary entity, i.e., number of tokens.
         delta : float
             Similarity threshold.
 
@@ -322,19 +322,19 @@ class DiceSimilarity:
 
         """
 
-        return math.floor(tokens_len * ((2 - delta) / delta))
+        return math.floor(entity_len * ((2 - delta) / delta))
     
     @staticmethod
-    def find_lower_bound_of_entity(tokens_len: int, delta: float) -> float:
+    def find_lower_bound_of_entity(entity_len: int, delta: float) -> float:
         """Computes lower overlap similarity threshold T, i.e., Tl.
         (cf. page 533, right column)
 
-        Tl = ⌈ |X| * (δ / (2 - δ)) ⌉
+        Tl = ⌈ |e| * (δ / (2 - δ)) ⌉
 
         Parameters
         ----------
-        tokens_len : int
-            Number of tokens.
+        entity_len : int
+            Length of dictionary entity, i.e., number of tokens.
         delta : float
             Similarity threshold.
 
@@ -344,7 +344,7 @@ class DiceSimilarity:
 
         """
 
-        return math.ceil(tokens_len * (delta / (2 - delta)))
+        return math.ceil(entity_len * (delta / (2 - delta)))
     
     @staticmethod
     def tighter_upper_window_size(entity_len: int, Pe_ij_len: int, delta: float) -> float:
@@ -405,16 +405,16 @@ class EditSimilarity:
         return math.ceil(max(entity_len, string_len) - ((max(entity_len, string_len) + q - 1) * (1 - delta) * q))
     
     @staticmethod
-    def find_min_size(tokens_len: int, delta: float, q: int) -> float:
+    def find_min_size(entity_len: int, delta: float, q: int) -> float:
         """Computes the lower bound ⊥e.
         (cf. page 531, left column)
 
-        ⊥e = ⌈ ((|X| + q - 1) * δ) - (q - 1) ⌉
+        ⊥e = ⌈ ((|e| + q - 1) * δ) - (q - 1) ⌉
 
         Parameters
         ----------
-        tokens_len : int
-            Number of tokens.
+        entity_len : int
+            Length of dictionary entity, i.e., number of tokens.
         delta : int
             Similarity threshold.
         q : int
@@ -426,19 +426,19 @@ class EditSimilarity:
 
         """
 
-        return math.ceil(((tokens_len + q - 1) * delta) - (q - 1))
+        return math.ceil(((entity_len + q - 1) * delta) - (q - 1))
     
     @staticmethod
-    def find_max_size(tokens_len: int, delta: int, q: int) -> float:
+    def find_max_size(entity_len: int, delta: float, q: int) -> float:
         """Computes the upper bound ⊤e.
         (cf. page 531, left column)
 
-        ⊤e = ⌊ ((|X| + q - 1) / δ) - (q - 1) ⌋
+        ⊤e = ⌊ ((|e| + q - 1) / δ) - (q - 1) ⌋
 
         Parameters
         ----------
-        tokens_len : int
-            Number of tokens.
+        entity_len : int
+            Length of dictionary entity, i.e., number of tokens.
         delta : float
             Similarity threshold.
         q : int
@@ -450,10 +450,10 @@ class EditSimilarity:
 
         """
 
-        return math.floor(((tokens_len + q - 1) / delta) - (q - 1))
+        return math.floor(((entity_len + q - 1) / delta) - (q - 1))
     
     @staticmethod
-    def find_lower_bound_of_entity(tokens_len: int, delta: float, q: int) -> float:
+    def find_lower_bound_of_entity(entity_len: int, delta: float, q: int) -> float:
         """Computes lower overlap similarity threshold T, i.e., Tl.
         (cf. page 533, right column)
 
@@ -461,8 +461,8 @@ class EditSimilarity:
 
         Parameters
         ----------
-        tokens_len : int
-            Number of tokens
+        entity_len : int
+            Length of dictionary entity, i.e., number of tokens.
         delta : float
             Similarity threshold.
         q : int
@@ -474,7 +474,7 @@ class EditSimilarity:
 
         """
 
-        return math.ceil(tokens_len - ((tokens_len + q - 1) * ((1 - delta) / delta) * q))
+        return math.ceil(entity_len - ((entity_len + q - 1) * ((1 - delta) / delta) * q))
     
     @staticmethod
     def tighter_neighbor_bound(entity_len: int, delta: float, q: int) -> float:
@@ -536,16 +536,16 @@ class EditDistance:
         return max(entity_len, string_len) - (tau * q)
 
     @staticmethod
-    def find_min_size(tokens_len: int, tau: int) -> int:
+    def find_min_size(entity_len: int, tau: int) -> int:
         """Computes the lower bound ⊥e.
         (cf. page 531, left column)
 
-        ⊥e = |X| - τ
+        ⊥e = |e| - τ
 
         Parameters
         ----------
-        tokens_len : int
-            Length of token.
+        entity_len : int
+            Length of dictionary entity, i.e., number of tokens.
         tau : int
             Edit distance threshold.
 
@@ -555,19 +555,19 @@ class EditDistance:
 
         """
 
-        return tokens_len - tau
+        return entity_len - tau
 
     @staticmethod
-    def find_max_size(tokens_len: int, tau: int) -> int:
+    def find_max_size(entity_len: int, tau: int) -> int:
         """Computes the upper bound ⊤e.
         (cf. page 531, left column)
 
-        ⊤e = |X| + τ
+        ⊤e = |e| + τ
 
         Parameters
         ----------
-        tokens_len : int
-            Number of tokens.
+        entity_len : int
+            Length of dictionary entity, i.e., number of tokens.
         tau : int
             Edit distance threshold.
 
@@ -577,19 +577,19 @@ class EditDistance:
 
         """
 
-        return tokens_len + tau
+        return entity_len + tau
     
     @staticmethod
-    def find_lower_bound_of_entity(tokens_len: int, tau: int, q: int) -> int:
+    def find_lower_bound_of_entity(entity_len: int, tau: int, q: int) -> int:
         """Computes lower overlap similarity threshold T, i.e., Tl.
         (cf. page 533, right column)
 
-        Tl = |X| - (τ * q)
+        Tl = |e| - (τ * q)
 
         Parameters
         ----------
-        tokens_len : int
-            Number of tokens
+        entity_len : int
+            Length of dictionary entity, i.e., number of tokens.
         tau : int
             Edit distance threshold.
         q : int
@@ -601,7 +601,7 @@ class EditDistance:
 
         """
 
-        return tokens_len - (tau * q)
+        return entity_len - (tau * q)
     
     @staticmethod
     def tighter_neighbor_bound(tau: int, q: int) -> int:
