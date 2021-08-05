@@ -401,6 +401,8 @@ class EditSimilarity:
         Overlap similarity threshold.
 
         """
+        if q > entity_len or q > string_len:
+            raise ValueError("Token size q must be smaller or equal entity/string length |e|.")
 
         return math.ceil(max(entity_len, string_len) - ((max(entity_len, string_len) + q - 1) * (1 - delta) * q))
     
@@ -425,6 +427,8 @@ class EditSimilarity:
         Lower bound ⊥e for number of tokens.
 
         """
+        if q > entity_len:
+            raise ValueError("Token size q must be smaller or equal entity length |e|.")
 
         return math.ceil(((entity_len + q - 1) * delta) - (q - 1))
     
@@ -449,6 +453,8 @@ class EditSimilarity:
         Upper bound ⊤e for number of tokens.
 
         """
+        if q > entity_len:
+            raise ValueError("Token size q must be smaller or equal entity length |e|.")
 
         return math.floor(((entity_len + q - 1) / delta) - (q - 1))
     
@@ -473,6 +479,8 @@ class EditSimilarity:
         Lower overlap similarity threshold Tl.
 
         """
+        if q > entity_len:
+            raise ValueError("Token size q must be smaller or equal entity length |e|.")
 
         return math.ceil(entity_len - ((entity_len + q - 1) * ((1 - delta) / delta) * q))
     
@@ -498,6 +506,8 @@ class EditSimilarity:
         Pruning threshold.
 
         """
+        if q > entity_len:
+            raise ValueError("Token size q must be smaller or equal entity length |e|.")
 
         return math.floor(((entity_len + q - 1) / delta) * (1 - delta) * q)
 
@@ -532,6 +542,10 @@ class EditDistance:
         Overlap similarity threshold.
 
         """
+        if q > entity_len or q > string_len:
+            raise ValueError("Token size q must be smaller or equal entity/string length |e|.")
+        elif tau > entity_len or tau > string_len:
+            raise ValueError("Edit distance threshold τ must be smaller or equal entity/string length |e|.")
 
         return max(entity_len, string_len) - (tau * q)
 
@@ -554,6 +568,8 @@ class EditDistance:
         Lower bound ⊥e for number of tokens.
 
         """
+        if tau > entity_len:
+            raise ValueError("Edit distance threshold τ must be smaller or equal entity length |e|.")
 
         return entity_len - tau
 
@@ -576,6 +592,8 @@ class EditDistance:
         Upper bound ⊤e for number of tokens.
 
         """
+        if tau > entity_len:
+            raise ValueError("Edit distance threshold τ must be smaller or equal entity length |e|.")
 
         return entity_len + tau
     
@@ -600,6 +618,10 @@ class EditDistance:
         Lower overlap similarity threshold Tl.
 
         """
+        if q > entity_len:
+            raise ValueError("Token size q must be smaller or equal entity length |e|.")
+        elif tau > entity_len:
+            raise ValueError("Edit distance threshold τ must be smaller or equal entity length |e|.")
 
         return entity_len - (tau * q)
     
@@ -662,7 +684,7 @@ class Similarity:
         return self._sims[self.similarity].tighter_upper_window_size(*args)
     
     def tighter_neighbor_bound(self, *args):
-        if self.similarity not in Sim.TOKEN_BASED:
+        if self.similarity not in Sim.CHAR_BASED:
             raise AttributeError("Tighter neighbor bound is not supported with {}".format(self.similarity))
         return self._sims[self.similarity].tighter_neighbor_bound(*args)
 
@@ -755,7 +777,7 @@ def edit_dist(r_string: str, s_string: str) -> int:
 
     """
 
-    return len(editops(r_string, s_string))
+    return round(len(editops(r_string, s_string)), 3)
 
 
 def edit_sim(r_string: str, s_string: str) -> float:
@@ -776,7 +798,7 @@ def edit_sim(r_string: str, s_string: str) -> float:
 
     """
 
-    return 1 - (edit_dist(r_string, s_string) / max(len(r_string), len(s_string)))
+    return round(1 - (edit_dist(r_string, s_string) / max(len(r_string), len(s_string))), 3)
 
 
 class Verify:
