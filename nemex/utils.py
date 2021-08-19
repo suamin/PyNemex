@@ -1,3 +1,13 @@
+"""
+Utils module
+
+Classes:
+    - Tokenizer
+    - Pruner
+    - Sim
+
+"""
+
 import collections
 import logging
 

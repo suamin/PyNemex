@@ -1,3 +1,11 @@
+"""
+Defaults module.
+
+Classes:
+    - Default
+
+"""
+
 from nemex import Pruner, Sim, Tokenizer
 
 

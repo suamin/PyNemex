@@ -1,3 +1,7 @@
+"""
+Test script
+"""
+
 from nemex.data import EntitiesDictionary
 from nemex.defaults import Default
 from nemex.faerie import Faerie
@@ -7,7 +11,8 @@ from nemex.nemex import Verify
 
 class Main:
     """Main class.
-    TODO: See Nemex.
+
+    See :class:`nemex.nemex` implementation.
 
     """
 
@@ -20,8 +25,23 @@ class Main:
                  unique: bool = Default.UNIQUE,
                  pruner: str = Default.PRUNER,
                  similarity: str = Default.SIMILARITY,
-                 verified_only: bool = Default.VERIFIED,
-                 special_char: str = Default.SPECIAL_CHAR):
+                 verify: bool = Default.VERIFY,
+                 special_char: str = Default.SPECIAL_CHAR) -> None:
+        """
+
+        Parameters
+        ----------
+        document
+        entities
+        tok_thresh
+        sim_thresh
+        char
+        unique
+        pruner
+        similarity
+        verify
+        special_char
+        """
 
         # document
         self.doc: str = document
@@ -29,8 +49,8 @@ class Main:
         # entity dictionary
         self.entities: list = entities
 
-        # ???
-        self.verified_only: bool = verified_only
+        # verify
+        self.verify: bool = verify
 
         '''
         tokenizer settings (see nemex.utils.Tokenizer)
@@ -203,7 +223,7 @@ class Main:
                 valid, score = Verify.check(substring, entity, self.similarity, self.t)
 
                 #
-                if self.verified_only:
+                if self.verify:
                     if not valid:
                         continue
 
@@ -216,10 +236,10 @@ class Main:
 
 if __name__ == '__main__':
 
-    document = "an efficient filter for approximate membership checking. venkaee shga kamunshik kabarati, " \
+    test_document = "an efficient filter for approximate membership checking. venkaee shga kamunshik kabarati, " \
              "dong xin, surauijt chadhurisigmod."
 
-    entities = [
+    test_entities = [
         "kaushik ch",
         "chakrabarti",
         "chaudhuri",
@@ -228,5 +248,5 @@ if __name__ == '__main__':
     ]
 
     # run with default settings
-    main = Main(document=document, entities=entities)
+    main = Main(document=test_document, entities=test_entities)
     main.run()

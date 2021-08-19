@@ -1,3 +1,14 @@
+"""
+Data module.
+
+Classes:
+    - Entity
+    - EntitiesDictionary
+    - InvertedIndex
+    - FaerieDataStructure
+
+"""
+
 import collections
 import pickle
 import heapq

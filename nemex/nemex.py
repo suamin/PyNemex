@@ -1,3 +1,11 @@
+"""
+Nemex module.
+
+Classes:
+    - Nemex
+
+"""
+
 import time
 
 from .data import EntitiesDictionary
@@ -39,9 +47,18 @@ class Nemex:
         If true, verify candidates.
     """
 
-    def __init__(self, list_or_file_entities, char=True, q: int = 2, special_char: str = "_", unique: bool = False,
-                 lower: bool = True, similarity: str = Sim.EDIT_DIST, t: int = 2, pruner: str = Pruner.BATCH_COUNT,
-                 verify: bool = True):
+    def __init__(self,
+                 list_or_file_entities,
+                 char=True,
+                 q: int = 2,
+                 special_char: str = "_",
+                 unique: bool = False,
+                 lower: bool = True,
+                 similarity: str = Sim.EDIT_DIST,
+                 t: int = 2,
+                 pruner: str = Pruner.BATCH_COUNT,
+                 verify: bool = True
+                 ) -> None:
 
         # character-level
         if char:

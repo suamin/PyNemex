@@ -1,5 +1,12 @@
 """
-Pruning
+Pruning module.
+
+Classes:
+    - NoPruning
+    - LazyCountPruning
+    - BucketCountPruning
+    - BatchCountPruning
+
 """
 
 import math

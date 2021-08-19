@@ -1,7 +1,14 @@
+"""
+Faerie module.
+
+Classes:
+    - Faerie
+
+"""
+
 import math
 import logging
 
-from typing import List, Tuple
 from nemex import FaerieDataStructure, InvertedIndex, Similarity, EntitiesDictionary
 from nemex import pruning
 from nemex.utils import Pruner, Sim
@@ -187,13 +194,13 @@ class Faerie(FaerieDataStructure, Similarity):
 
         return
     
-    def find_candidates(self, Pe: List[int], Le: int, Te: int, count_spans: List[Tuple[int, int]],
-                        entity_len: int) -> Tuple[int, int]:
+    def find_candidates(self, Pe: list, Le: int, Te: int, count_spans: list,
+                        entity_len: int) -> (int, int):
         """Given candidate spans, find candidates.
         
         Parameters
         ----------
-        Pe : List[int]
+        Pe : list
             Position list of entity.
 
         Le : int
@@ -202,7 +209,7 @@ class Faerie(FaerieDataStructure, Similarity):
         Te : int
             Upper bound on length of valid substring.
 
-        count_spans : List[Tuple[int, int]]
+        count_spans : list
             List of start (i) and end (j) indexes in position list.
             Each element of these sub-lists (Pe_ij) will be used to
             count entity's occurrence in sub-strings.

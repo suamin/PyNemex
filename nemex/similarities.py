@@ -1,7 +1,20 @@
+"""
+Similarities module.
+
+Classes:
+    - JaccardSimilarity
+    - CosineSimilarity
+    - DiceSimilarity
+    - EditSimilarity
+    - EditDistance
+    - Similarity
+    - Verify
+
+"""
+
 import math
 
 from Levenshtein import editops
-from typing import Tuple, Union
 from nemex.utils import Sim
 
 
@@ -810,15 +823,15 @@ class Verify:
     """
 
     @classmethod
-    def check(cls, r: Union[list, str], s: Union[list, str], method: str, t: float) -> Tuple[bool, float]:
+    def check(cls, r, s, method: str, t: float) -> (bool, float):
         """Verifies whether the candidates from the unified framework (i.e. overlap similarity)
         are valid candidates (i.e. based on their true similarity).
 
         Parameters
         ----------
-        r : {list, str}
+        r :
             Tokens of dictionary entity. Token representation depends on similarity method.
-        s : {list, str}
+        s :
             Tokens of document string. Token representation depends on similarity method.
         method : str
             Similarity method.
