@@ -1,16 +1,16 @@
 import unittest
 
-from nemex import Tokenizer
+from nemex import Tokenizer, Default
 
 
 class TestTokenizer(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.char = True
-        self.q = 2
-        self.special_char = "_"
-        self.unique = False
-        self.lower = True
+        self.char = Default.CHAR
+        self.q = Default.TOKEN_THRESH
+        self.special_char = Default.SPECIAL_CHAR
+        self.unique = Default.UNIQUE
+        self.lower = Default.LOWER
 
         self.doc = "Lorem ipsum."
 

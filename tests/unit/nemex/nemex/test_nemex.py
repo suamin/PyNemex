@@ -13,7 +13,7 @@ class TestNemex(unittest.TestCase):
 
         self.q = Default.TOKEN_THRESH
         self.sim = Default.SIMILARITY
-        self.t = Default.SIM_THRESH
+        self.t = Default.SIM_THRESH_CHAR
         self.pruner = Default.PRUNER
 
         self.nemex = None

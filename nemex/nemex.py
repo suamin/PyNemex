@@ -49,15 +49,15 @@ class Nemex:
 
     def __init__(self,
                  list_or_file_entities,
-                 char=True,
-                 q: int = 2,
-                 special_char: str = "_",
-                 unique: bool = False,
-                 lower: bool = True,
-                 similarity: str = Sim.EDIT_DIST,
-                 t: int = 2,
-                 pruner: str = Pruner.BATCH_COUNT,
-                 verify: bool = True
+                 char: bool = Default.CHAR,
+                 q: int = Default.TOKEN_THRESH,
+                 special_char: str = Default.SPECIAL_CHAR,
+                 unique: bool = Default.UNIQUE,
+                 lower: bool = Default.LOWER,
+                 similarity: str = Default.SIMILARITY,
+                 t: int = Default.SIM_THRESH_CHAR,
+                 pruner: str = Default.PRUNER,
+                 verify: bool = Default.VERIFY
                  ) -> None:
 
         # character-level

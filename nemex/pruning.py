@@ -24,7 +24,12 @@ class NoPruning:
     """
 
     @classmethod
-    def filter(cls, Pe: list, Le: int, Te: int, *args):
+    def filter(cls,
+               Pe: list,
+               Le: int,
+               Te: int,
+               *args
+               ) -> None:
         """Does not perform any pruning.
 
         Parameters
@@ -60,7 +65,13 @@ class LazyCountPruning:
     """
 
     @classmethod
-    def filter(cls, Pe: list, Le: int, Te: int, Tl: int, *args):
+    def filter(cls,
+               Pe: list,
+               Le: int,
+               Te: int,
+               Tl: int,
+               *args
+               ) -> None:
         """Searches invalid windows using Lazy-Count Pruning.
 
         1. Count e's occurrence number (len(Pe)).
@@ -99,7 +110,14 @@ class BucketCountPruning:
     """
 
     @classmethod
-    def filter(cls, Pe: list, Le: int, Te: int, Tl: int, tighter_bound_func, *bound_args):
+    def filter(cls,
+               Pe: list,
+               Le: int,
+               Te: int,
+               Tl: int,
+               tighter_bound_func,
+               *bound_args
+               ) -> None:
         """Searches count spans using Bucket Count Pruning.
 
         TODO: No partitioning? --> size(bucket) < Tl, then prune elements in bucket
@@ -147,7 +165,10 @@ class BucketCountPruning:
                     yield i, j
 
     @classmethod
-    def iter_bucket_spans(cls, Pe: list, t: int):
+    def iter_bucket_spans(cls,
+                          Pe: list,
+                          t: int
+                          ):
         """Iterate over position list (Pe).
 
         1. Loop over position list (Pe)
@@ -224,7 +245,14 @@ class BatchCountPruning:
     """
 
     @classmethod
-    def filter(cls, Pe: list, Le: int, Te: int, Tl: int, tighter_bound_func, *bound_args):
+    def filter(cls,
+               Pe: list,
+               Le: int,
+               Te: int,
+               Tl: int,
+               tighter_bound_func,
+               *bound_args
+               ) -> None:
         """Searches invalid window using Batch-Count Pruning.
 
         Parameters
@@ -271,8 +299,15 @@ class BatchCountPruning:
                     yield i, j
 
     @classmethod
-    def check_possible_candidate_window(cls, i: int, j: int, Pe: list, Le: int, Te: int, Tl: int,
-                                        tighter_Te: int = None) -> bool:
+    def check_possible_candidate_window(cls,
+                                        i: int,
+                                        j: int,
+                                        Pe: list,
+                                        Le: int,
+                                        Te: int,
+                                        Tl: int,
+                                        tighter_Te: int = None
+                                        ) -> bool:
         """Checks whether a window is a ``possible candidate window''.
 
         Parameters
@@ -317,7 +352,11 @@ class BatchCountPruning:
         return False
 
     @classmethod
-    def iter_possible_candidate_windows(cls, Pe: list, Te: int, Tl: int):
+    def iter_possible_candidate_windows(cls,
+                                        Pe: list,
+                                        Te: int,
+                                        Tl: int
+                                        ):
         """TODO: Documentation
 
         Parameters
@@ -358,7 +397,13 @@ class BatchCountPruning:
                 i = cls.binary_shift(i, j, Pe, Te, Tl)
 
     @classmethod
-    def binary_shift(cls, i: int, j: int, Pe: list, Te: int, Tl: int):
+    def binary_shift(cls,
+                     i: int,
+                     j: int,
+                     Pe: list,
+                     Te: int,
+                     Tl: int
+                     ):
         """Performs binary shift on position list Pe.
 
         Parameters
@@ -408,7 +453,12 @@ class BatchCountPruning:
         return i
 
     @classmethod
-    def binary_span(cls, i: int, j: int, Pe: list, Te: int):
+    def binary_span(cls,
+                    i: int,
+                    j: int,
+                    Pe: list,
+                    Te: int
+                    ) -> int:
         """Performs binary span on position list Pe.
 
         Parameters
@@ -424,7 +474,7 @@ class BatchCountPruning:
 
         Returns
         -------
-        TODO: Documentation
+        Returns the new right span, which is the medium of lower and upper.
 
         """
 
@@ -435,7 +485,7 @@ class BatchCountPruning:
 
             # mid is new right span, eventually larger than j (i.e. lower)
             # if mid jumps out of len(Pe) then it will raise IndexError!
-            mid = math.ceil((upper + lower)/2)
+            mid = int(math.ceil((upper + lower)/2))
 
             if mid <= len(Pe):
                 pmid, pi = Pe[mid-1], Pe[i-1]

@@ -15,7 +15,8 @@ Classes:
 import math
 
 from Levenshtein import editops
-from nemex.utils import Sim
+
+from .utils import Sim
 
 
 class JaccardSimilarity:
@@ -669,7 +670,8 @@ class Similarity:
 
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """"""
         self.similarity = None
         self._sims = {
             Sim.JACCARD: JaccardSimilarity(),

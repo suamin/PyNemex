@@ -2,10 +2,11 @@
 Test script
 """
 
+import collections
+
 from nemex.data import EntitiesDictionary
-from nemex.defaults import Default
 from nemex.faerie import Faerie
-from nemex.utils import *
+from nemex.utils import Default, Tokenizer, qgrams_to_char, Sim
 from nemex.nemex import Verify
 
 
@@ -20,13 +21,14 @@ class Main:
                  document: str,
                  entities: list,
                  tok_thresh: int = Default.TOKEN_THRESH,
-                 sim_thresh: int = Default.SIM_THRESH,
+                 sim_thresh: int = Default.SIM_THRESH_CHAR,
                  char: bool = Default.CHAR,
                  unique: bool = Default.UNIQUE,
                  pruner: str = Default.PRUNER,
                  similarity: str = Default.SIMILARITY,
                  verify: bool = Default.VERIFY,
-                 special_char: str = Default.SPECIAL_CHAR) -> None:
+                 special_char: str = Default.SPECIAL_CHAR
+                 ) -> None:
         """
 
         Parameters

@@ -1,15 +1,12 @@
 import unittest
-from main import Main
 
 
 class TestMain(unittest.TestCase):
     """Main Test class.
-
     """
 
     def setUp(self) -> None:
         """Setup test.
-
         """
 
         # entity dictionary
@@ -37,16 +34,13 @@ class TestMain(unittest.TestCase):
 
     def test_main(self):
         """Run main test.
-
         """
-
-
-
+        # TODO: Add main test.
+        self.assertTrue(False)
         return
 
     def tearDown(self) -> None:
         """Cleanup test.
-
         """
         return None
 

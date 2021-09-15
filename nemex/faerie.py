@@ -9,7 +9,7 @@ Classes:
 import math
 import logging
 
-from nemex import FaerieDataStructure, InvertedIndex, Similarity, EntitiesDictionary
+from nemex import FaerieDataStructure, InvertedIndex, Similarity, EntitiesDictionary, Default
 from nemex import pruning
 from nemex.utils import Pruner, Sim
 
@@ -61,8 +61,13 @@ class Faerie(FaerieDataStructure, Similarity):
 
     """
 
-    def __init__(self, entities_dict: EntitiesDictionary, similarity: str = Sim.COSINE, t: float = 0.7, q: int = None,
-                 pruner: str = Pruner.BATCH_COUNT):
+    def __init__(self,
+                 entities_dict: EntitiesDictionary,
+                 similarity: str = Default.SIMILARITY,
+                 t: float = Default.SIM_THRESH_TOKEN,
+                 q: int = Default.TOKEN_THRESH,
+                 pruner: str = Default.PRUNER
+                 ) -> None:
 
         FaerieDataStructure.__init__(self, entities_dict)
         Similarity.__init__(self)
@@ -194,8 +199,13 @@ class Faerie(FaerieDataStructure, Similarity):
 
         return
     
-    def find_candidates(self, Pe: list, Le: int, Te: int, count_spans: list,
-                        entity_len: int) -> (int, int):
+    def find_candidates(self,
+                        Pe: list,
+                        Le: int,
+                        Te: int,
+                        count_spans: list,
+                        entity_len: int
+                        ) -> (int, int):
         """Given candidate spans, find candidates.
         
         Parameters
@@ -281,6 +291,7 @@ class Faerie(FaerieDataStructure, Similarity):
         # note that this should be outside the previous loop to allow counts
         # to be fully updated before this pruning step is applied
         for candidate_start, candidate_len in candidates:
+
             # if |e ∩ s| >= T (where overlap size is estimated by count array)
             if self.check_overlap_similarity(candidate_start, candidate_len, entity_len):
                 yield candidate_start, candidate_len
@@ -293,18 +304,18 @@ class Faerie(FaerieDataStructure, Similarity):
         Parameters
         ----------
         candidate_start : int
-            TODO: Documentation
+            Candidate position.
         candidate_len : int
-            TODO: Documentation
+            Candidate length.
         entity_len : int
-            TODO: Documentation
+            Length of dictionary entity, i.e., number of tokens.
 
         Returns
         -------
-        TODO: Documentation
+        True, if |e ∩ s| >= T.
 
         """
-        
+
         # compute overlap similarity threshold
         if self.similarity in Sim.CHAR_BASED:
             T = self.find_tau_min_overlap(entity_len, candidate_len, self.t, self.q)

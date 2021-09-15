@@ -21,7 +21,7 @@ class TestBucketCount(unittest.TestCase):
 
     def setArgs(self):
         self.edict = EntitiesDictionary.from_list(self.entities, Default.TOKENIZER)
-        self.faerie = Faerie(self.edict, Default.SIMILARITY, Default.SIM_THRESH, Default.TOKEN_THRESH, Pruner.BUCKET_COUNT)
+        self.faerie = Faerie(self.edict, Default.SIMILARITY, Default.SIM_THRESH_CHAR, Default.TOKEN_THRESH, Pruner.BUCKET_COUNT)
         self.doc_tokens = Default.TOKENIZER(self.document)
         return
 

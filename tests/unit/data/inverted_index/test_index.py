@@ -6,6 +6,8 @@ from nemex import InvertedIndex
 class TestInvertedIndex(unittest.TestCase):
 
     def setUp(self) -> None:
+        # TODO: Setup test.
+        self.inv_index = InvertedIndex({})
         return None
 
     def test_example(self):

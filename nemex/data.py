@@ -496,7 +496,7 @@ class FaerieDataStructure:
 
     @property
     def heap(self) -> list:
-        """TODO: Documentation
+        """Returns the inverted list.
 
         Returns
         -------

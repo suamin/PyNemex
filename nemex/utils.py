@@ -13,6 +13,7 @@ import logging
 
 from typing import List, Tuple
 
+from nemex import Default
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +38,13 @@ class Tokenizer:
 
     """
 
-    def __init__(self, char: bool = True, q: int = 2, special_char: str = "_", unique: bool = False, lower: bool = True):
+    def __init__(self,
+                 char: bool = Default.CHAR,
+                 q: int = Default.TOKEN_THRESH,
+                 special_char: str = Default.SPECIAL_CHAR,
+                 unique: bool = Default.UNIQUE,
+                 lower: bool = Default.LOWER
+                 ) -> None:
         self.char = char
         self.q = q
         self.special_char = special_char
