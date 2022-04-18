@@ -1,5 +1,5 @@
 # PyNemex 
-**Py**thon package **N**amed **e**ntity **m**atching and **ex**traction (PyNemex) is a python package for approximate entity extraction. Currently, it is mainly based on Faerie [1] algorithm.
+**Py**thon package for **N**amed **e**ntity **m**atching and **ex**traction (PyNemex) with approximate string matching. Currently, it is mainly based on Faerie [1] algorithm.
 
 ## Installation
 Soon as:
